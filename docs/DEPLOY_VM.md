@@ -63,7 +63,7 @@ docker --version
 
 ```bash
 cd /opt
-sudo git clone https://github.com/your-username/MakeMeFit.git
+sudo git clone https://github.com/1Denbackyard/MakeMeFit.git
 sudo chown -R $USER:$USER MakeMeFit
 cd MakeMeFit
 ```

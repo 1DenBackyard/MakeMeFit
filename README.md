@@ -45,19 +45,20 @@ Production-ready MVP Telegram Mini App that provides AI-powered recommendations 
 
 ### Деплой (рекомендуется)
 - [Деплой на amesin.ru](docs/DEPLOY_AMESIN.md) - **инструкция для вашего домена** 🎯
+- [Синхронизация файлов](docs/SYNC_VM.md) - **обновление кода с сохранением .env** 🔄
+- [Команда синхронизации](docs/SYNC_COMMAND.md) - **быстрая команда для обновления** ⚡
 - [Подготовка VM и SSL сертификаты](docs/VM_SETUP.md) - полная подготовка сервера
 - [Автоматический деплой на VM](docs/AUTO_DEPLOY.md) - автоматический деплой через GitHub Actions
-- [Деплой на VM с IP](docs/DEPLOY_VM.md) - ручное развертывание на сервере
-
-### Разработка
-- [Локальное тестирование](docs/LOCAL_TESTING.md) - как протестировать локально
 
 ### Настройка
-- [Настройка Python окружения](docs/SETUP_PYTHON.md) - venv, Poetry, зависимости (с Homebrew)
-- [Настройка Python БЕЗ Homebrew](docs/SETUP_PYTHON_NO_BREW.md) - альтернативные способы установки
 - [Настройка Telegram Mini App](docs/TELEGRAM_SETUP.md) - создание бота, настройка Mini App
-- [Настройка окружения](docs/ENV_SETUP.md) - переменные окружения, локальный запуск
+- [Настройка окружения](docs/ENV_SETUP.md) - переменные окружения
 - [Создание .env файлов](scripts/README-ENV.md) - шаблоны и примеры
+- [Настройка Python окружения](docs/SETUP_PYTHON.md) - venv, Poetry, зависимости
+- [Настройка Python БЕЗ Homebrew](docs/SETUP_PYTHON_NO_BREW.md) - альтернативные способы установки
 
 ### Архитектура
 - [Архитектура](docs/README.md)
+
+### Troubleshooting
+- [Решение проблем](docs/TROUBLESHOOTING.md) - частые ошибки и их решения

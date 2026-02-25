@@ -3,38 +3,63 @@ alwaysApply: true
 ---
 # MakeMeFit Project Memory
 
-## LLM Provider Configuration
+## Проект
+Production-ready Telegram Mini App MVP для AI-рекомендаций по добавкам и тренировкам.
 
-### SberCloud Foundation Models Integration
-- **Endpoint**: `https://foundation-models.api.cloud.ru/v1`
-- **Model**: `openai/gpt-oss-120b` (или другой доступный)
-- **API Key**: Через переменную окружения `LLM_API_KEY`
-- **Provider**: Установить `LLM_PROVIDER=sbercloud` в `.env`
+## Домен и деплой
+- **Домен**: amesin.ru
+- **API**: api.amesin.ru (backend на порту 8000)
+- **Frontend**: app.amesin.ru (frontend на порту 5173)
+- **VM**: /opt/makemefit
+- **Деплой**: Автоматический через GitHub Actions при push в main
 
-### Streaming Support
-- Каждый пользователь получает свой поток (stream) ответа
-- Реализовано через Server-Sent Events (SSE)
-- Endpoints: `/stream/requests/{id}/demo` и `/stream/requests/{id}/full`
-- Поток обновляется в реальном времени, улучшая UX
+## LLM Provider
+- **Работает с любым OpenAI-совместимым API**
+- Название провайдера не играет роли
+- Если указан `LLM_BASE_URL`, система автоматически использует его
+- Пример: `LLM_BASE_URL=https://foundation-models.api.cloud.ru/v1`
 
-### Конфигурация для SberCloud
-```env
-LLM_PROVIDER=sbercloud
-LLM_API_KEY=your_sbercloud_api_key
-LLM_BASE_URL=https://foundation-models.api.cloud.ru/v1
-LLM_MODEL=openai/gpt-oss-120b
-LLM_MODEL_FULL=openai/gpt-oss-120b
-LLM_STREAMING=true
+## Архитектура
+- **Backend**: FastAPI (async), Python 3.11+, PostgreSQL, Docker
+- **Frontend**: React + TypeScript, Vite, Telegram Mini Apps SDK
+- **Database**: PostgreSQL 15 в Docker
+- **Reverse Proxy**: Nginx с SSL (Let's Encrypt)
+- **Deployment**: Docker Compose, автоматический через GitHub Actions
+
+## Ключевые файлы
+- `infra/docker-compose.yml` - конфигурация Docker
+- `backend/.env` - секреты backend (НЕ в git!)
+- `frontend/.env` - опционально, для кастомного API URL
+- `.github/workflows/deploy.yml` - автоматический деплой
+- `scripts/sync_from_repo.sh` - синхронизация файлов с сохранением .env
+
+## Важные директории на VM
+- `/opt/makemefit` - корень проекта
+- `/opt/makemefit/backend/.env` - секреты (сохранять при синхронизации!)
+- `/opt/makemefit/infra` - docker-compose
+- `/etc/nginx/sites-available/makemefit` - конфигурация Nginx
+- `/etc/letsencrypt/live/` - SSL сертификаты
+
+## Команды синхронизации
+```bash
+# На VM
+cd /opt/makemefit
+./scripts/sync_from_repo.sh
+
+# Или вручную через git
+git fetch origin
+git reset --hard origin/main
+# .env файлы сохраняются автоматически
 ```
 
-### Важные моменты
-1. **Изоляция потоков**: Каждый запрос создает отдельный HTTP stream, изоляция на уровне FastAPI/HTTP
-2. **Токены пользователя**: JWT токен в заголовке `Authorization: Bearer <token>` обеспечивает изоляцию запросов
-3. **База данных**: Каждый запрос привязан к `user_id`, что гарантирует изоляцию данных
-4. **Rate Limiting**: Ограничение на уровне пользователя предотвращает злоупотребления
+## Бизнес-логика
+1. Telegram auth → Track selection → Form → Anti-fraud → Demo → Paywall → Payment → Full answer + PDF → History → Trainer referral
+2. **User limits**: 1 demo per track, затем требуется оплата
+3. **Anti-fraud**: 2-stage pipeline (rule-based + validation)
+4. **Streaming**: SSE для real-time ответов AI
 
-### Архитектура Streaming
-- Используется `httpx.AsyncClient` с `stream=True`
-- Парсинг SSE формата OpenAI
-- Каждый chunk отправляется клиенту немедленно
-- Полный ответ сохраняется в БД после завершения потока
+## Технические детали
+- **Token efficiency**: Использует маленькую модель для demo, большую для full
+- **Stateless**: Все состояние в БД
+- **Rate limiting**: На уровне пользователя
+- **Security**: Telegram initData validation, JWT токены
