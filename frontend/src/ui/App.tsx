@@ -6,7 +6,7 @@ import { SupplementsForm } from '../components/SupplementsForm';
 import { WorkoutsForm } from '../components/WorkoutsForm';
 import { DemoAnswer } from '../components/DemoAnswer';
 import { FullAnswer } from '../components/FullAnswer';
-import { createRequest, getDemo, generateFullAnswer, getHistory, RequestResponse, TrackType } from '../api/requests';
+import { createRequest, getDemo, generateFullAnswer, getHistory, RequestResponse, TrackType, FullAnswerResponse } from '../api/requests';
 import { theme } from '../styles/theme';
 
 type AppState = 
@@ -80,8 +80,11 @@ export const App: React.FC = () => {
 
     try {
       WebApp.MainButton.showProgress();
-      const full = await generateFullAnswer(currentRequest.id);
-      setFullAnswer(full);
+      const full: FullAnswerResponse = await generateFullAnswer(currentRequest.id);
+      setFullAnswer({
+        full_answer: full.full_answer,
+        pdf_url: full.pdf_url,
+      });
       setState('full_answer');
       WebApp.MainButton.hideProgress();
     } catch (err) {
