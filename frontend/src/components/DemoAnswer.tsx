@@ -1,5 +1,6 @@
-/** Demo answer display component. */
+import React from 'react';
 import { DemoResponse } from '../api/requests';
+import { theme } from '../styles/theme';
 
 interface DemoAnswerProps {
   demo: DemoResponse;
@@ -9,13 +10,17 @@ interface DemoAnswerProps {
 export function DemoAnswer({ demo, onUnlock }: DemoAnswerProps) {
   return (
     <div style={styles.container}>
-      <h2 style={styles.title}>Your Demo Recommendation</h2>
+      <div style={styles.header}>
+        <h2 style={styles.title}>Your Demo Recommendation</h2>
+        <p style={styles.subtitle}>Preview of your personalized plan</p>
+      </div>
       
       <div style={styles.answerBox}>
-        <p style={styles.answer}>{demo.demo_answer}</p>
+        <div style={styles.answer}>{demo.demo_answer}</div>
       </div>
 
       <div style={styles.paywall}>
+        <div style={styles.paywallIcon}>🔒</div>
         <p style={styles.paywallText}>{demo.message}</p>
         <button style={styles.unlockButton} onClick={onUnlock}>
           Unlock Full Plan + PDF + History
@@ -27,47 +32,67 @@ export function DemoAnswer({ demo, onUnlock }: DemoAnswerProps) {
 
 const styles: Record<string, React.CSSProperties> = {
   container: {
-    padding: '20px',
+    minHeight: '100vh',
+    padding: theme.spacing.lg,
     maxWidth: '600px',
     margin: '0 auto',
+    backgroundColor: theme.colors.background,
+  },
+  header: {
+    marginBottom: theme.spacing.lg,
   },
   title: {
-    fontSize: '24px',
-    fontWeight: 'bold',
-    marginBottom: '20px',
+    fontSize: theme.typography.fontSize['2xl'],
+    fontWeight: theme.typography.fontWeight.bold,
+    marginBottom: theme.spacing.xs,
+    color: theme.colors.text,
+  },
+  subtitle: {
+    fontSize: theme.typography.fontSize.base,
+    color: theme.colors.textSecondary,
+    margin: 0,
   },
   answerBox: {
-    background: '#f5f5f5',
-    padding: '20px',
-    borderRadius: '12px',
-    marginBottom: '24px',
+    background: theme.colors.surface,
+    padding: theme.spacing.lg,
+    borderRadius: theme.borderRadius.lg,
+    marginBottom: theme.spacing.lg,
+    border: `1px solid ${theme.colors.borderLight}`,
   },
   answer: {
-    fontSize: '16px',
-    lineHeight: '1.6',
+    fontSize: theme.typography.fontSize.base,
+    lineHeight: theme.typography.lineHeight.relaxed,
     whiteSpace: 'pre-wrap',
-    margin: 0,
+    color: theme.colors.text,
   },
   paywall: {
     textAlign: 'center',
-    padding: '24px',
-    background: '#fff3cd',
-    borderRadius: '12px',
-    border: '2px solid #ffc107',
+    padding: theme.spacing.xl,
+    background: theme.colors.primaryLight,
+    borderRadius: theme.borderRadius.lg,
+    border: `2px solid ${theme.colors.primary}`,
+  },
+  paywallIcon: {
+    fontSize: '32px',
+    marginBottom: theme.spacing.sm,
   },
   paywallText: {
-    fontSize: '16px',
-    marginBottom: '16px',
-    color: '#856404',
+    fontSize: theme.typography.fontSize.base,
+    marginBottom: theme.spacing.md,
+    color: theme.colors.text,
+    lineHeight: theme.typography.lineHeight.relaxed,
   },
   unlockButton: {
-    padding: '16px 32px',
-    background: '#2481cc',
-    color: '#fff',
+    width: '100%',
+    padding: theme.spacing.md,
+    background: theme.colors.primary,
+    color: '#ffffff',
     border: 'none',
-    borderRadius: '8px',
-    fontSize: '16px',
-    fontWeight: 'bold',
+    borderRadius: theme.borderRadius.md,
+    fontSize: theme.typography.fontSize.base,
+    fontWeight: theme.typography.fontWeight.semibold,
     cursor: 'pointer',
+    transition: theme.transitions.normal,
+    boxShadow: theme.shadows.md,
   },
 };

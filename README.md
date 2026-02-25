@@ -44,11 +44,8 @@ Production-ready MVP Telegram Mini App that provides AI-powered recommendations 
 ## Документация
 
 ### Деплой (рекомендуется)
-- [Деплой на amesin.ru](docs/DEPLOY_AMESIN.md) - **инструкция для вашего домена** 🎯
-- [Синхронизация файлов](docs/SYNC_VM.md) - **обновление кода с сохранением .env** 🔄
-- [Команда синхронизации](docs/SYNC_COMMAND.md) - **быстрая команда для обновления** ⚡
-- [Подготовка VM и SSL сертификаты](docs/VM_SETUP.md) - полная подготовка сервера
-- [Автоматический деплой на VM](docs/AUTO_DEPLOY.md) - автоматический деплой через GitHub Actions
+- **[Настройка VM с нуля](docs/VM_SETUP_FROM_SCRATCH.md)** - **полная инструкция для новой VM** 🚀
+- [Исправление SSL ошибок Nginx](docs/NGINX_SSL_FIX.md) - если видите ошибку "cannot load certificate"
 
 ### Настройка
 - [Настройка Telegram Mini App](docs/TELEGRAM_SETUP.md) - создание бота, настройка Mini App
@@ -62,3 +59,4 @@ Production-ready MVP Telegram Mini App that provides AI-powered recommendations 
 
 ### Troubleshooting
 - [Решение проблем](docs/TROUBLESHOOTING.md) - частые ошибки и их решения
+- [Исправление SSL ошибок Nginx](docs/NGINX_SSL_FIX.md) - если видите ошибку "cannot load certificate"

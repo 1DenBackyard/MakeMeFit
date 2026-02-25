@@ -1,5 +1,6 @@
-/** Track selection component. */
+import React from 'react';
 import { TrackType } from '../api/requests';
+import { theme } from '../styles/theme';
 
 interface TrackSelectionProps {
   onSelect: (track: TrackType) => void;
@@ -8,18 +9,20 @@ interface TrackSelectionProps {
 export function TrackSelection({ onSelect }: TrackSelectionProps) {
   return (
     <div style={styles.container}>
-      <h1 style={styles.title}>Choose Your Track</h1>
-      <p style={styles.subtitle}>Select what you'd like help with</p>
+      <div style={styles.header}>
+        <h1 style={styles.title}>MakeMeFit</h1>
+        <p style={styles.subtitle}>Choose your path to better health</p>
+      </div>
       
       <div style={styles.tracks}>
         <button
           style={styles.trackButton}
           onClick={() => onSelect('supplements')}
         >
-          <div style={styles.trackIcon}>💊</div>
+          <div style={styles.icon}>💊</div>
           <h2 style={styles.trackTitle}>Supplements</h2>
           <p style={styles.trackDescription}>
-            Get personalized supplement recommendations based on your goals
+            Personalized supplement recommendations
           </p>
         </button>
         
@@ -27,10 +30,10 @@ export function TrackSelection({ onSelect }: TrackSelectionProps) {
           style={styles.trackButton}
           onClick={() => onSelect('workouts')}
         >
-          <div style={styles.trackIcon}>🏋️</div>
+          <div style={styles.icon}>🏋️</div>
           <h2 style={styles.trackTitle}>Workouts</h2>
           <p style={styles.trackDescription}>
-            Get a custom workout plan tailored to your fitness level
+            Custom workout plans tailored to you
           </p>
         </button>
       </div>
@@ -40,48 +43,60 @@ export function TrackSelection({ onSelect }: TrackSelectionProps) {
 
 const styles: Record<string, React.CSSProperties> = {
   container: {
-    padding: '20px',
+    minHeight: '100vh',
+    padding: theme.spacing.lg,
     maxWidth: '600px',
     margin: '0 auto',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+  },
+  header: {
+    textAlign: 'center',
+    marginBottom: theme.spacing.xxl,
   },
   title: {
-    fontSize: '24px',
-    fontWeight: 'bold',
-    marginBottom: '8px',
-    textAlign: 'center',
+    fontSize: theme.typography.fontSize['4xl'],
+    fontWeight: theme.typography.fontWeight.bold,
+    marginBottom: theme.spacing.sm,
+    color: theme.colors.text,
+    letterSpacing: '-0.02em',
   },
   subtitle: {
-    fontSize: '16px',
-    color: '#666',
-    marginBottom: '32px',
-    textAlign: 'center',
+    fontSize: theme.typography.fontSize.lg,
+    color: theme.colors.textSecondary,
+    margin: 0,
   },
   tracks: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '16px',
+    gap: theme.spacing.md,
   },
   trackButton: {
-    border: '2px solid #2481cc',
-    borderRadius: '12px',
-    padding: '24px',
-    background: '#fff',
+    border: `1px solid ${theme.colors.border}`,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing.xl,
+    background: theme.colors.background,
     cursor: 'pointer',
     textAlign: 'left',
-    transition: 'all 0.2s',
+    transition: theme.transitions.normal,
+    boxShadow: theme.shadows.sm,
   },
-  trackIcon: {
+  icon: {
     fontSize: '48px',
-    marginBottom: '12px',
+    marginBottom: theme.spacing.md,
+    lineHeight: 1,
   },
   trackTitle: {
-    fontSize: '20px',
-    fontWeight: 'bold',
-    marginBottom: '8px',
+    fontSize: theme.typography.fontSize['2xl'],
+    fontWeight: theme.typography.fontWeight.semibold,
+    marginBottom: theme.spacing.xs,
+    color: theme.colors.text,
   },
   trackDescription: {
-    fontSize: '14px',
-    color: '#666',
+    fontSize: theme.typography.fontSize.base,
+    color: theme.colors.textSecondary,
     margin: 0,
+    lineHeight: theme.typography.lineHeight.relaxed,
   },
 };
