@@ -21,36 +21,42 @@ Production-ready Telegram Mini App MVP для AI-рекомендаций по �
 
 ## Архитектура
 - **Backend**: FastAPI (async), Python 3.11+, PostgreSQL, Docker
-- **Frontend**: React + TypeScript, Vite, Telegram Mini Apps SDK
+- **Frontend**: React + TypeScript, Vite, Telegram Mini Apps SDK (@twa-dev/sdk)
 - **Database**: PostgreSQL 15 в Docker
 - **Reverse Proxy**: Nginx с SSL (Let's Encrypt)
 - **Deployment**: Docker Compose, автоматический через GitHub Actions
 
+## Структура Frontend
+- `src/ui/App.tsx` - главный компонент приложения (state management, routing)
+- `src/components/` - TrackSelection, SupplementsForm, WorkoutsForm, DemoAnswer, FullAnswer
+- `src/api/` - client, auth, requests (API клиент)
+- `src/hooks/useTelegram.ts` - хук для работы с Telegram WebApp SDK
+- `src/styles/theme.ts` - дизайн-система
+
 ## Ключевые файлы
 - `infra/docker-compose.yml` - конфигурация Docker
 - `backend/.env` - секреты backend (НЕ в git!)
-- `frontend/.env` - опционально, для кастомного API URL
+- `scripts/update_vm.sh` - быстрая команда обновления на VM
 - `.github/workflows/deploy.yml` - автоматический деплой
-- `scripts/sync_from_repo.sh` - синхронизация файлов с сохранением .env
 
 ## Важные директории на VM
 - `/opt/makemefit` - корень проекта
-- `/opt/makemefit/backend/.env` - секреты (сохранять при синхронизации!)
+- `/opt/makemefit/backend/.env` - секреты (сохраняются при обновлении!)
 - `/opt/makemefit/infra` - docker-compose
 - `/etc/nginx/sites-available/makemefit` - конфигурация Nginx
 - `/etc/letsencrypt/live/` - SSL сертификаты
 
-## Команды синхронизации
+## Быстрое обновление на VM
 ```bash
-# На VM
 cd /opt/makemefit
-./scripts/sync_from_repo.sh
-
-# Или вручную через git
-git fetch origin
-git reset --hard origin/main
-# .env файлы сохраняются автоматически
+./scripts/update_vm.sh
 ```
+
+Эта команда:
+1. Сохраняет .env файлы
+2. Обновляет код из git
+3. Восстанавливает .env файлы
+4. Пересобирает и перезапускает контейнеры
 
 ## Бизнес-логика
 1. Telegram auth → Track selection → Form → Anti-fraud → Demo → Paywall → Payment → Full answer + PDF → History → Trainer referral
@@ -63,3 +69,4 @@ git reset --hard origin/main
 - **Stateless**: Все состояние в БД
 - **Rate limiting**: На уровне пользователя
 - **Security**: Telegram initData validation, JWT токены
+- **Frontend**: Использует default export для App компонента

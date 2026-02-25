@@ -41,10 +41,22 @@ Production-ready MVP Telegram Mini App that provides AI-powered recommendations 
 - Если указан `LLM_BASE_URL`, система автоматически использует его
 - Просто укажите ваш endpoint в `LLM_BASE_URL` и API ключ в `LLM_API_KEY`
 
+## Быстрое обновление на VM
+
+**Одна команда для обновления:**
+```bash
+cd /opt/makemefit && ./scripts/update_vm.sh
+```
+
+Эта команда автоматически обновляет код, сохраняет .env файлы, пересобирает и перезапускает контейнеры.
+
+📖 **Подробнее**: [docs/QUICK_UPDATE.md](docs/QUICK_UPDATE.md)
+
 ## Документация
 
-### Деплой (рекомендуется)
-- **[Настройка VM с нуля](docs/VM_SETUP_FROM_SCRATCH.md)** - **полная инструкция для новой VM** 🚀
+### Деплой
+- **[Настройка VM с нуля](docs/VM_SETUP_FROM_SCRATCH.md)** - полная инструкция для новой VM 🚀
+- **[Быстрое обновление](docs/QUICK_UPDATE.md)** - одна команда для обновления на VM
 - [Исправление SSL ошибок Nginx](docs/NGINX_SSL_FIX.md) - если видите ошибку "cannot load certificate"
 
 ### Настройка
@@ -59,4 +71,3 @@ Production-ready MVP Telegram Mini App that provides AI-powered recommendations 
 
 ### Troubleshooting
 - [Решение проблем](docs/TROUBLESHOOTING.md) - частые ошибки и их решения
-- [Исправление SSL ошибок Nginx](docs/NGINX_SSL_FIX.md) - если видите ошибку "cannot load certificate"
