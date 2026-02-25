@@ -27,15 +27,42 @@ export default function App() {
 
   // Auth on mount
   useEffect(() => {
-    if (!ready || !initData) return;
+    if (!ready) {
+      console.log('[Auth] Waiting for Telegram WebApp to be ready...');
+      return;
+    }
+
+    if (!initData) {
+      console.error('[Auth] initData is missing!');
+      const errorMessage = 'Telegram authentication data is missing. Please open this app from Telegram.';
+      dispatch({ type: 'AUTH_ERROR', error: errorMessage });
+      setToast({ message: errorMessage, type: 'error' });
+      return;
+    }
 
     const authenticate = async () => {
       try {
+        console.log('[Auth] Starting authentication...');
         dispatch({ type: 'AUTH_START' });
-        await authTelegram(initData);
+        
+        const response = await authTelegram(initData);
+        console.log('[Auth] Authentication successful', response);
+        
         dispatch({ type: 'AUTH_SUCCESS' });
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Authentication failed';
+        console.error('[Auth] Authentication failed:', err);
+        
+        let errorMessage = 'Authentication failed';
+        if (err instanceof Error) {
+          errorMessage = err.message;
+          // Try to extract more details from error
+          if (err.message.includes('401') || err.message.includes('Invalid')) {
+            errorMessage = 'Invalid Telegram authentication. Please check bot token configuration.';
+          } else if (err.message.includes('Network') || err.message.includes('fetch')) {
+            errorMessage = 'Cannot connect to server. Please check your connection.';
+          }
+        }
+        
         dispatch({ type: 'AUTH_ERROR', error: errorMessage });
         setToast({ message: errorMessage, type: 'error' });
       }
@@ -203,7 +230,17 @@ export default function App() {
           <div className="text-center max-w-md">
             <h2 className="text-2xl font-bold text-error mb-4">Authentication Failed</h2>
             <p className="text-text-secondary mb-6">{state.error || 'Something went wrong'}</p>
-            <Button onClick={() => window.location.reload()}>Retry</Button>
+            <div className="space-y-3">
+              <Button onClick={() => window.location.reload()}>Retry</Button>
+              <div className="text-xs text-text-light mt-4 p-3 bg-surface rounded">
+                <p className="font-semibold mb-1">Troubleshooting:</p>
+                <ul className="text-left space-y-1 list-disc list-inside">
+                  <li>Make sure you opened this app from Telegram</li>
+                  <li>Check that bot token is configured correctly</li>
+                  <li>Try closing and reopening the app</li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
       </Screen>

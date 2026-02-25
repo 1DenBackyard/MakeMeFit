@@ -17,14 +17,25 @@ async def auth_telegram(
     db: AsyncSession = Depends(get_db),
 ):
     """Authenticate user via Telegram initData."""
+    print(f"[Auth] Received auth request, init_data length: {len(init_data.init_data) if init_data.init_data else 0}")
+    
+    if not init_data.init_data or not init_data.init_data.strip():
+        raise HTTPException(
+            status_code=400,
+            detail="init_data is required. Make sure the app is opened from Telegram."
+        )
+    
     user_data = validate_telegram_init_data(init_data.init_data)
     
     if not user_data:
-        raise HTTPException(status_code=401, detail="Invalid Telegram initData")
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid Telegram initData. Check: 1) App opened from Telegram, 2) TELEGRAM_BOT_TOKEN is correct, 3) initData is not expired"
+        )
     
     telegram_id = user_data.get("id")
     if not telegram_id:
-        raise HTTPException(status_code=401, detail="Missing user ID")
+        raise HTTPException(status_code=401, detail="Missing user ID in Telegram data")
     
     # Get or create user
     result = await db.execute(

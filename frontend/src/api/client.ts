@@ -39,16 +39,30 @@ class ApiClient {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    const url = `${API_BASE_URL}${endpoint}`;
+    console.log(`[API] ${options.method || 'GET'} ${url}`);
+
+    const response = await fetch(url, {
       ...options,
       headers,
     });
 
     if (!response.ok) {
-      const error: ApiError = await response.json().catch(() => ({
-        detail: `HTTP ${response.status}: ${response.statusText}`,
-      }));
-      throw new Error(error.detail || 'Request failed');
+      let errorDetail = `HTTP ${response.status}: ${response.statusText}`;
+      
+      try {
+        const errorData: ApiError = await response.json();
+        errorDetail = errorData.detail || errorDetail;
+      } catch {
+        // If JSON parsing fails, use status text
+        const text = await response.text().catch(() => '');
+        if (text) {
+          errorDetail = text;
+        }
+      }
+      
+      console.error(`[API] Error ${response.status}:`, errorDetail);
+      throw new Error(errorDetail);
     }
 
     return response.json();

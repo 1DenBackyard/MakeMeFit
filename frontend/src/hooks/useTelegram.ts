@@ -16,22 +16,36 @@ export function useTelegram() {
   const [initData, setInitData] = useState<string | null>(null);
 
   useEffect(() => {
-    WebApp.ready();
-    setReady(true);
-    
-    const tgUser = WebApp.initDataUnsafe?.user;
-    if (tgUser) {
-      setUser(tgUser as TelegramUser);
+    try {
+      WebApp.ready();
+      setReady(true);
+      
+      const tgUser = WebApp.initDataUnsafe?.user;
+      if (tgUser) {
+        setUser(tgUser as TelegramUser);
+        console.log('[Telegram] User detected:', tgUser);
+      }
+      
+      const initDataValue = WebApp.initData || null;
+      setInitData(initDataValue);
+      
+      if (initDataValue) {
+        console.log('[Telegram] initData available, length:', initDataValue.length);
+      } else {
+        console.warn('[Telegram] initData is missing! This may cause authentication to fail.');
+        console.warn('[Telegram] Make sure the app is opened from Telegram, not directly in browser.');
+      }
+      
+      // Expand app
+      WebApp.expand();
+      
+      // Set theme
+      WebApp.setHeaderColor('#2481cc');
+      WebApp.setBackgroundColor('#ffffff');
+    } catch (err) {
+      console.error('[Telegram] Error initializing WebApp:', err);
+      setReady(true); // Still set ready to allow error handling
     }
-    
-    setInitData(WebApp.initData || null);
-    
-    // Expand app
-    WebApp.expand();
-    
-    // Set theme
-    WebApp.setHeaderColor('#2481cc');
-    WebApp.setBackgroundColor('#ffffff');
   }, []);
 
   return {
