@@ -30,10 +30,12 @@ Production-ready MVP Telegram Mini App that provides AI-powered recommendations 
 
 ## Структура проекта
 
-- `frontend/`: React + TypeScript Telegram Mini App
+- `frontend/`: React + TypeScript Telegram Mini App (TailwindCSS, state machine, premium UI)
 - `backend/`: FastAPI, async, Postgres, LLM abstraction, PDF generation
 - `infra/`: Docker, docker-compose, Container Apps deployment helpers
-- `docs/`: Документация (архитектура, деплой, настройка окружения)
+- `docs/`: Документация (архитектура, деплой, настройка окружения, troubleshooting)
+
+**Важно:** Все собирается в Docker на VM. Зависимости (включая TailwindCSS) устанавливаются автоматически при `docker-compose build`. Локальная установка npm не требуется.
 
 ## Важно про LLM провайдер
 

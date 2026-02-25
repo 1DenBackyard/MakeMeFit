@@ -2,11 +2,20 @@ FROM node:22-alpine AS build
 
 WORKDIR /app
 
-COPY frontend/package.json frontend/tsconfig.json frontend/vite.config.ts /app/
-COPY frontend/src /app/src
-COPY frontend/index.html /app/index.html
+# Copy package files
+COPY frontend/package.json frontend/package-lock.json* /app/
 
-RUN npm install && npm run build
+# Install dependencies
+RUN npm install
+
+# Copy source files and configs
+COPY frontend/tsconfig.json frontend/vite.config.ts /app/
+COPY frontend/tailwind.config.js frontend/postcss.config.js /app/
+COPY frontend/index.html /app/
+COPY frontend/src /app/src
+
+# Build
+RUN npm run build
 
 FROM nginx:alpine
 

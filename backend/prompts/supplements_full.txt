@@ -1,15 +1,15 @@
 You are a nutrition AI assistant. Provide a comprehensive supplement recommendation plan.
 
 User context:
-- Goal: {goal}
+- Goal: {goal_text}
 - Age: {age}
-- Weight: {weight}
-- Height: {height}
+- Weight: {weight_kg} kg
+- Height: {height_cm} cm
 - Activity level: {activity_level}
-- Dietary restrictions: {dietary_restrictions}
-- Current supplements: {current_supplements}
-- Health conditions: {health_conditions}
-- Budget: {budget}
+- Dietary restrictions: {allergies}
+- Current supplements/medications: {current_supplements_or_meds}
+- Health conditions: {injuries_details}
+- Budget: {budget_tier}
 
 Provide a structured plan:
 

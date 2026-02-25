@@ -1,38 +1,27 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useReducer, useRef } from 'react';
 import { useTelegram } from '../hooks/useTelegram';
 import { authTelegram } from '../api/auth';
+import { createRequest, getDemo, generateFullAnswer, getHistory, RequestResponse } from '../api/requests';
+import { matchTrainer, createLead } from '../api/trainers';
+import { appReducer, AppState, AppAction } from '../state/appState';
+import { normalizeFormData } from '../utils/formData';
 import { TrackSelection } from '../components/TrackSelection';
 import { SupplementsForm } from '../components/SupplementsForm';
 import { WorkoutsForm } from '../components/WorkoutsForm';
 import { DemoAnswer } from '../components/DemoAnswer';
 import { FullAnswer } from '../components/FullAnswer';
-import { 
-  createRequest, 
-  getDemo, 
-  generateFullAnswer, 
-  RequestResponse, 
-  TrackType, 
-  FullAnswerResponse 
-} from '../api/requests';
-import { theme } from '../styles/theme';
-
-type AppState = 
-  | 'loading'
-  | 'auth'
-  | 'track_selection'
-  | 'form'
-  | 'demo'
-  | 'full_answer'
-  | 'error';
+import { HistoryScreen } from '../components/HistoryScreen';
+import { TrainerReferral } from '../components/TrainerReferral';
+import { Screen } from '../components/ui/Screen';
+import { Loader } from '../components/ui/Loader';
+import { Button } from '../components/ui/Button';
+const initialState: AppState = { type: 'loading' };
 
 export default function App() {
   const { ready, initData, WebApp } = useTelegram();
-  const [state, setState] = useState<AppState>('loading');
-  const [error, setError] = useState<string | null>(null);
-  const [selectedTrack, setSelectedTrack] = useState<TrackType | null>(null);
-  const [currentRequest, setCurrentRequest] = useState<RequestResponse | null>(null);
-  const [demoResponse, setDemoResponse] = useState<any>(null);
-  const [fullAnswer, setFullAnswer] = useState<{ full_answer: string; pdf_url?: string } | null>(null);
+  const [state, dispatch] = useReducer(appReducer, initialState);
+  const [toast, setToast] = React.useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const currentRequestRef = useRef<RequestResponse | null>(null);
 
   // Auth on mount
   useEffect(() => {
@@ -40,177 +29,335 @@ export default function App() {
 
     const authenticate = async () => {
       try {
+        dispatch({ type: 'AUTH_START' });
         await authTelegram(initData);
-        setState('track_selection');
+        dispatch({ type: 'AUTH_SUCCESS' });
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Authentication failed');
-        setState('error');
+        const errorMessage = err instanceof Error ? err.message : 'Authentication failed';
+        dispatch({ type: 'AUTH_ERROR', error: errorMessage });
+        setToast({ message: errorMessage, type: 'error' });
       }
     };
 
     authenticate();
   }, [ready, initData]);
 
-  const handleTrackSelect = (track: TrackType) => {
-    setSelectedTrack(track);
-    setState('form');
+  // Configure Telegram MainButton based on state
+  useEffect(() => {
+    if (!WebApp?.MainButton) return;
+
+    const mainButton = WebApp.MainButton;
+    
+    // Clean up previous handlers
+    mainButton.offClick(() => {});
+    
+    switch (state.type) {
+      case 'form':
+        // Form submission is handled by form's submit button
+        mainButton.hide();
+        break;
+      case 'demo':
+      case 'paywall':
+        mainButton.setText('Unlock Full Plan');
+        mainButton.show();
+        mainButton.onClick(() => {
+          handleUnlock();
+        });
+        break;
+      default:
+        mainButton.hide();
+    }
+    
+    return () => {
+      mainButton.offClick(() => {});
+    };
+  }, [state.type, WebApp, handleUnlock]);
+
+    return () => {
+      mainButton.offClick(() => {});
+    };
+  }, [state, WebApp]);
+
+  const handleTrackSelect = (track: 'supplements' | 'workouts') => {
+    dispatch({ type: 'SELECT_TRACK', track });
   };
 
   const handleFormSubmit = async (formData: Record<string, unknown>) => {
-    if (!selectedTrack) return;
+    if (state.type !== 'form') return;
 
     try {
-      WebApp.MainButton.showProgress();
+      dispatch({ type: 'SUBMIT_FORM_START' });
+      if (WebApp?.MainButton) {
+        WebApp.MainButton.showProgress();
+      }
+
+      // Normalize form data
+      const normalizedData = normalizeFormData(state.track, formData);
+
+      // Create request
       const request = await createRequest({
-        track: selectedTrack,
-        form_data: formData,
+        track: state.track,
+        form_data: normalizedData,
       });
-      setCurrentRequest(request);
+      currentRequestRef.current = request;
 
       // Get demo answer
       const demo = await getDemo(request.id);
-      setDemoResponse(demo);
-      setState('demo');
-      WebApp.MainButton.hideProgress();
+      
+      if (WebApp?.MainButton) {
+        WebApp.MainButton.hideProgress();
+      }
+
+      dispatch({ type: 'SUBMIT_FORM_SUCCESS', request, demo });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create request');
-      setState('error');
-      WebApp.MainButton.hideProgress();
+      if (WebApp?.MainButton) {
+        WebApp.MainButton.hideProgress();
+      }
+      const errorMessage = err instanceof Error ? err.message : 'Failed to create request';
+      dispatch({ type: 'SUBMIT_FORM_ERROR', error: errorMessage });
+      setToast({ message: errorMessage, type: 'error' });
     }
   };
 
   const handleUnlock = async () => {
-    if (!currentRequest) return;
+    if (state.type !== 'demo' && state.type !== 'paywall') return;
 
     try {
-      WebApp.MainButton.showProgress();
-      const full: FullAnswerResponse = await generateFullAnswer(currentRequest.id);
-      setFullAnswer({
-        full_answer: full.full_answer,
-        pdf_url: full.pdf_url,
-      });
-      setState('full_answer');
-      WebApp.MainButton.hideProgress();
+      dispatch({ type: 'UNLOCK_START' });
+      if (WebApp?.MainButton) {
+        WebApp.MainButton.showProgress();
+      }
+
+      const request = state.request;
+      const answer = await generateFullAnswer(request.id);
+      
+      if (WebApp?.MainButton) {
+        WebApp.MainButton.hideProgress();
+      }
+
+      dispatch({ type: 'UNLOCK_SUCCESS', answer });
+      setToast({ message: 'Full plan unlocked!', type: 'success' });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Payment failed');
-      setState('error');
-      WebApp.MainButton.hideProgress();
+      if (WebApp?.MainButton) {
+        WebApp.MainButton.hideProgress();
+      }
+      const errorMessage = err instanceof Error ? err.message : 'Failed to unlock full plan';
+      dispatch({ type: 'UNLOCK_ERROR', error: errorMessage });
+      setToast({ message: errorMessage, type: 'error' });
     }
   };
 
+  const handleShowHistory = async () => {
+    try {
+      const requests = await getHistory();
+      dispatch({ type: 'SHOW_HISTORY', requests });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load history';
+      setToast({ message: errorMessage, type: 'error' });
+    }
+  };
+
+  const handleTrainerReferral = async () => {
+    if (state.type !== 'full_answer') return;
+
+    try {
+      const request = state.request;
+      
+      // Match trainer
+      const trainer = await matchTrainer(request.id);
+      
+      // Create lead
+      const lead = await createLead({
+        trainer_id: trainer.id,
+        request_id: request.id,
+      });
+      
+      if (state.type === 'full_answer') {
+        dispatch({ type: 'SHOW_TRAINER_REFERRAL', deepLink: lead.deep_link });
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to find trainer';
+      setToast({ message: errorMessage, type: 'error' });
+    }
+  };
+
+  const handleGoBack = () => {
+    dispatch({ type: 'GO_BACK' });
+  };
+
   // Render based on state
-  if (state === 'loading') {
+  if (state.type === 'loading') {
     return (
-      <div style={styles.container}>
-        <div style={styles.loader}>Loading...</div>
-      </div>
-    );
-  }
-
-  if (state === 'error') {
-    return (
-      <div style={styles.container}>
-        <div style={styles.errorBox}>
-          <h2 style={styles.errorTitle}>Oops!</h2>
-          <p style={styles.errorText}>{error || 'Something went wrong'}</p>
-          <button style={styles.button} onClick={() => setState('track_selection')}>
-            Go Back
-          </button>
+      <Screen>
+        <div className="flex items-center justify-center min-h-screen">
+          <Loader size="lg" />
         </div>
-      </div>
+      </Screen>
     );
   }
 
-  if (state === 'track_selection') {
+  if (state.type === 'auth') {
     return (
-      <div style={styles.app}>
+      <Screen>
+        <div className="flex flex-col items-center justify-center min-h-screen p-6">
+          <div className="text-center max-w-md">
+            <h2 className="text-2xl font-bold text-error mb-4">Authentication Failed</h2>
+            <p className="text-text-secondary mb-6">{state.error || 'Something went wrong'}</p>
+            <Button onClick={() => window.location.reload()}>Retry</Button>
+          </div>
+        </div>
+      </Screen>
+    );
+  }
+
+  if (state.type === 'error') {
+    return (
+      <Screen>
+        <div className="flex flex-col items-center justify-center min-h-screen p-6">
+          <div className="text-center max-w-md">
+            <h2 className="text-2xl font-bold text-error mb-4">Oops!</h2>
+            <p className="text-text-secondary mb-6">{state.message}</p>
+            <div className="flex gap-3">
+              {state.canRetry && (
+                <Button onClick={handleGoBack}>Go Back</Button>
+              )}
+              <Button variant="outline" onClick={() => dispatch({ type: 'RESET' })}>
+                Start Over
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Screen>
+    );
+  }
+
+  if (state.type === 'track_selection') {
+    return (
+      <Screen>
         <TrackSelection onSelect={handleTrackSelect} />
-      </div>
+      </Screen>
     );
   }
 
-  if (state === 'form') {
+  if (state.type === 'form') {
     return (
-      <div style={styles.app}>
-        {selectedTrack === 'supplements' ? (
+      <Screen
+        header={
+          <div className="px-4 py-3 flex items-center gap-3">
+            <Button variant="ghost" size="sm" onClick={handleGoBack}>
+              ← Back
+            </Button>
+            <h1 className="text-lg font-semibold flex-1">
+              {state.track === 'supplements' ? 'Supplements' : 'Workouts'}
+            </h1>
+          </div>
+        }
+      >
+        {state.track === 'supplements' ? (
           <SupplementsForm onSubmit={handleFormSubmit} />
         ) : (
           <WorkoutsForm onSubmit={handleFormSubmit} />
         )}
-      </div>
+      </Screen>
     );
   }
 
-  if (state === 'demo' && demoResponse) {
+  if (state.type === 'demo' || state.type === 'paywall') {
     return (
-      <div style={styles.app}>
-        <DemoAnswer demo={demoResponse} onUnlock={handleUnlock} />
-      </div>
-    );
-  }
-
-  if (state === 'full_answer' && fullAnswer) {
-    return (
-      <div style={styles.app}>
-        <FullAnswer 
-          answer={fullAnswer} 
-          onTrainerReferral={() => {
-            WebApp.showAlert('Trainer referral coming soon!');
-          }}
+      <Screen
+        header={
+          <div className="px-4 py-3 flex items-center gap-3">
+            <Button variant="ghost" size="sm" onClick={handleGoBack}>
+              ← Back
+            </Button>
+            <h1 className="text-lg font-semibold flex-1">Demo Plan</h1>
+          </div>
+        }
+      >
+        <DemoAnswer
+          demo={state.demo}
+          onUnlock={handleUnlock}
+          requiresPayment={state.type === 'paywall'}
         />
-      </div>
+      </Screen>
     );
   }
 
-  return null;
-}
+  if (state.type === 'full_answer') {
+    return (
+      <Screen
+        header={
+          <div className="px-4 py-3 flex items-center gap-3">
+            <Button variant="ghost" size="sm" onClick={handleGoBack}>
+              ← Back
+            </Button>
+            <h1 className="text-lg font-semibold flex-1">Your Plan</h1>
+            <Button variant="ghost" size="sm" onClick={handleShowHistory}>
+              History
+            </Button>
+          </div>
+        }
+      >
+        <FullAnswer
+          answer={state.answer}
+          onTrainerReferral={handleTrainerReferral}
+        />
+      </Screen>
+    );
+  }
 
-const styles: Record<string, React.CSSProperties> = {
-  app: {
-    minHeight: '100vh',
-    backgroundColor: theme.colors.background,
-    fontFamily: theme.typography.fontFamily,
-    color: theme.colors.text,
-  },
-  container: {
-    minHeight: '100vh',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: theme.spacing.md,
-    backgroundColor: theme.colors.background,
-    fontFamily: theme.typography.fontFamily,
-  },
-  loader: {
-    fontSize: theme.typography.fontSize.lg,
-    color: theme.colors.textSecondary,
-  },
-  errorBox: {
-    textAlign: 'center',
-    maxWidth: '400px',
-    padding: theme.spacing.xl,
-  },
-  errorTitle: {
-    fontSize: theme.typography.fontSize['2xl'],
-    fontWeight: theme.typography.fontWeight.bold,
-    marginBottom: theme.spacing.md,
-    color: theme.colors.error,
-  },
-  errorText: {
-    fontSize: theme.typography.fontSize.base,
-    color: theme.colors.textSecondary,
-    marginBottom: theme.spacing.lg,
-    lineHeight: theme.typography.lineHeight.relaxed,
-  },
-  button: {
-    padding: `${theme.spacing.md} ${theme.spacing.lg}`,
-    backgroundColor: theme.colors.primary,
-    color: '#ffffff',
-    border: 'none',
-    borderRadius: theme.borderRadius.md,
-    fontSize: theme.typography.fontSize.base,
-    fontWeight: theme.typography.fontWeight.semibold,
-    cursor: 'pointer',
-    transition: theme.transitions.normal,
-  },
-};
+  if (state.type === 'history') {
+    return (
+      <Screen
+        header={
+          <div className="px-4 py-3 flex items-center gap-3">
+            <Button variant="ghost" size="sm" onClick={handleGoBack}>
+              ← Back
+            </Button>
+            <h1 className="text-lg font-semibold flex-1">History</h1>
+          </div>
+        }
+      >
+        <HistoryScreen requests={state.requests} />
+      </Screen>
+    );
+  }
+
+  if (state.type === 'trainer_referral') {
+    return (
+      <>
+        <Screen
+          header={
+            <div className="px-4 py-3 flex items-center gap-3">
+              <Button variant="ghost" size="sm" onClick={handleGoBack}>
+                ← Back
+              </Button>
+              <h1 className="text-lg font-semibold flex-1">Trainer Match</h1>
+            </div>
+          }
+        >
+          <TrainerReferral deepLink={state.deepLink} />
+        </Screen>
+        {toast && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onClose={() => setToast(null)}
+          />
+        )}
+      </>
+    );
+  }
+
+  return (
+    <>
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+    </>
+  );
+}

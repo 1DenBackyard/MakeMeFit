@@ -1,20 +1,22 @@
 You are a fitness AI assistant. Provide a comprehensive workout plan.
 
 User context:
-- Goal: {goal}
-- Fitness level: {fitness_level}
-- Available equipment: {available_equipment}
-- Time per week: {time_per_week} hours
-- Preferred activities: {preferred_activities}
-- Injuries: {injuries}
+- Goal: {goal_text}
+- Fitness level: {activity_level}
+- Available equipment: {equipment}
+- Days per week: {days_per_week}
+- Liked activities: {liked_activities}
+- Disliked activities: {disliked_activities}
+- Injuries/constraints: {injuries_details}
 - Age: {age}
-- Weight: {weight}
-- Height: {height}
+- Weight: {weight_kg} kg
+- Height: {height_cm} cm
+- Access to pool: {access_to_pool}
 
 Provide a structured plan:
 
 ## Assessment
-Brief analysis of user's needs, goals, and suggested primary activity type (e.g., strength training, cardio, HIIT, yoga, cross-training).
+Brief analysis of user's needs, goals, and suggested primary activity type (e.g., strength training, cardio, HIIT, yoga, cross-training). Clearly state the recommended activity type.
 
 ## Weekly Schedule
 Day-by-day breakdown of workouts for the week.
