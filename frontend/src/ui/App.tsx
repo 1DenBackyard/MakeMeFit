@@ -1,93 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import { useTelegram } from '../hooks/useTelegram';
-import { authTelegram } from '../api/auth';
-import { TrackSelection } from '../components/TrackSelection';
-import { SupplementsForm } from '../components/SupplementsForm';
-import { WorkoutsForm } from '../components/WorkoutsForm';
-import { DemoAnswer } from '../components/DemoAnswer';
-import { FullAnswer } from '../components/FullAnswer';
-import { createRequest, getDemo, generateFullAnswer, getHistory, RequestResponse, TrackType } from '../api/requests';
-import { theme } from '../styles/theme';
-
-type AppState = 
-  | 'loading'
-  | 'auth'
-  | 'track_selection'
-  | 'form'
-  | 'demo'
-  | 'paywall'
-  | 'full_answer'
-  | 'history'
-  | 'error';
-
-export const App: React.FC = () => {
-  const { ready, initData, WebApp } = useTelegram();
-  const [state, setState] = useState<AppState>('loading');
-  const [error, setError] = useState<string | null>(null);
-  const [selectedTrack, setSelectedTrack] = useState<TrackType | null>(null);
-  const [currentRequest, setCurrentRequest] = useState<RequestResponse | null>(null);
-  const [demoResponse, setDemoResponse] = useState<any>(null);
-  const [fullAnswer, setFullAnswer] = useState<{ full_answer: string; pdf_url?: string } | null>(null);
-  const [history, setHistory] = useState<RequestResponse[]>([]);
-
-  // Auth on mount
-  useEffect(() => {
-    if (!ready || !initData) return;
-
-    const authenticate = async () => {
-      try {
-        await authTelegram(initData);
-        setState('track_selection');
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Authentication failed');
-        setState('error');
-      }
-    };
-
-    authenticate();
-  }, [ready, initData]);
-
-  const handleTrackSelect = (track: TrackType) => {
-    setSelectedTrack(track);
-    setState('form');
-  };
-
-  const handleFormSubmit = async (formData: Record<string, unknown>) => {
-    if (!selectedTrack) return;
-
-    try {
-      WebApp.MainButton.showProgress();
-      const request = await createRequest({
-        track: selectedTrack,
-        form_data: formData,
-      });
-      setCurrentRequest(request);
-
-      // Get demo answer
-      const demo = await getDemo(request.id);
-      setDemoResponse(demo);
-      setState('demo');
-      WebApp.MainButton.hideProgress();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create request');
-      setState('error');
-      WebApp.MainButton.hideProgress();
+import React from "react";
+      setFullAnswer(null);
     }
   };
 
-  const handleUnlock = async () => {
-    if (!currentRequest) return;
-
+  const handleViewHistory = async () => {
     try {
-      WebApp.MainButton.showProgress();
-      const full = await generateFullAnswer(currentRequest.id);
-      setFullAnswer(full);
-      setState('full_answer');
-      WebApp.MainButton.hideProgress();
+      const h = await getHistory();
+      setHistory(h);
+      setState('history');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Payment failed');
+      setError(err instanceof Error ? err.message : 'Failed to load history');
       setState('error');
-      WebApp.MainButton.hideProgress();
     }
   };
 
