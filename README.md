@@ -44,9 +44,10 @@ Production-ready MVP Telegram Mini App that provides AI-powered recommendations 
 ## Документация
 
 ### Деплой (рекомендуется)
-- [Автоматический деплой на VM](docs/AUTO_DEPLOY.md) - **автоматический деплой через GitHub Actions**
+- [Деплой на amesin.ru](docs/DEPLOY_AMESIN.md) - **инструкция для вашего домена** 🎯
+- [Подготовка VM и SSL сертификаты](docs/VM_SETUP.md) - полная подготовка сервера
+- [Автоматический деплой на VM](docs/AUTO_DEPLOY.md) - автоматический деплой через GitHub Actions
 - [Деплой на VM с IP](docs/DEPLOY_VM.md) - ручное развертывание на сервере
-- [Быстрый деплой](docs/QUICK_DEPLOY.md) - краткая инструкция
 
 ### Разработка
 - [Локальное тестирование](docs/LOCAL_TESTING.md) - как протестировать локально
