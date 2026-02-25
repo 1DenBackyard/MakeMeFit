@@ -41,6 +41,22 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- Telegram WebApp SDK will be loaded by @twa-dev/sdk -->
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Debug: Log Telegram WebApp availability
+      window.addEventListener('load', () => {
+        console.log('[Telegram] Window loaded');
+        console.log('[Telegram] window.Telegram:', window.Telegram);
+        console.log('[Telegram] window.tg:', window.tg);
+        if (window.Telegram?.WebApp) {
+          console.log('[Telegram] WebApp found:', {
+            initData: window.Telegram.WebApp.initData,
+            version: window.Telegram.WebApp.version,
+            platform: window.Telegram.WebApp.platform,
+          });
+        }
+      });
+    </script>
   </body>
 </html>
