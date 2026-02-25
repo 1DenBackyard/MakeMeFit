@@ -1,3 +1,40 @@
 ---
 alwaysApply: true
 ---
+# MakeMeFit Project Memory
+
+## LLM Provider Configuration
+
+### SberCloud Foundation Models Integration
+- **Endpoint**: `https://foundation-models.api.cloud.ru/v1`
+- **Model**: `openai/gpt-oss-120b` (или другой доступный)
+- **API Key**: Через переменную окружения `LLM_API_KEY`
+- **Provider**: Установить `LLM_PROVIDER=sbercloud` в `.env`
+
+### Streaming Support
+- Каждый пользователь получает свой поток (stream) ответа
+- Реализовано через Server-Sent Events (SSE)
+- Endpoints: `/stream/requests/{id}/demo` и `/stream/requests/{id}/full`
+- Поток обновляется в реальном времени, улучшая UX
+
+### Конфигурация для SberCloud
+```env
+LLM_PROVIDER=sbercloud
+LLM_API_KEY=your_sbercloud_api_key
+LLM_BASE_URL=https://foundation-models.api.cloud.ru/v1
+LLM_MODEL=openai/gpt-oss-120b
+LLM_MODEL_FULL=openai/gpt-oss-120b
+LLM_STREAMING=true
+```
+
+### Важные моменты
+1. **Изоляция потоков**: Каждый запрос создает отдельный HTTP stream, изоляция на уровне FastAPI/HTTP
+2. **Токены пользователя**: JWT токен в заголовке `Authorization: Bearer <token>` обеспечивает изоляцию запросов
+3. **База данных**: Каждый запрос привязан к `user_id`, что гарантирует изоляцию данных
+4. **Rate Limiting**: Ограничение на уровне пользователя предотвращает злоупотребления
+
+### Архитектура Streaming
+- Используется `httpx.AsyncClient` с `stream=True`
+- Парсинг SSE формата OpenAI
+- Каждый chunk отправляется клиенту немедленно
+- Полный ответ сохраняется в БД после завершения потока
