@@ -1,0 +1,85 @@
+name: Deploy to VM
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:  # Позволяет запускать вручную
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts
+      
+      - name: Deploy to server
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'EOF'
+            set -e
+            
+            echo "🚀 Starting deployment..."
+            
+            # Переходим в директорию проекта
+            cd /opt/makemefit || (git clone https://github.com/${{ github.repository }}.git /opt/makemefit && cd /opt/makemefit)
+            cd /opt/makemefit
+            
+            # Обновляем код
+            git fetch origin
+            git reset --hard origin/${{ github.ref_name }}
+            
+            # Копируем .env если его нет (из секретов или вручную)
+            if [ ! -f backend/.env ]; then
+              echo "⚠️  .env file not found. Please create it manually on server."
+              echo "SSH to server and create backend/.env file"
+              exit 1
+            fi
+            
+            # Останавливаем старые контейнеры
+            cd infra
+            docker-compose down || true
+            
+            # Собираем и запускаем новые контейнеры
+            docker-compose build --no-cache
+            docker-compose up -d
+            
+            # Ждем запуска
+            echo "⏳ Waiting for services to start..."
+            sleep 15
+            
+            # Проверяем health
+            echo "🔍 Checking health..."
+            for i in {1..10}; do
+              if curl -f http://localhost:8000/health > /dev/null 2>&1; then
+                echo "✅ Health check passed!"
+                break
+              fi
+              if [ $i -eq 10 ]; then
+                echo "❌ Health check failed!"
+                docker-compose logs
+                exit 1
+              fi
+              sleep 3
+            done
+            
+            # Применяем миграции
+            echo "📦 Running migrations..."
+            docker-compose exec -T backend alembic upgrade head || echo "⚠️  Migrations failed or no migrations"
+            
+            echo "✅ Deployment completed successfully!"
+          EOF
+      
+      - name: Cleanup
+        if: always()
+        run: |
+          rm -f ~/.ssh/deploy_key

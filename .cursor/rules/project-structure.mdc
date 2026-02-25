@@ -1,0 +1,32 @@
+---
+alwaysApply: true
+---
+# MakeMeFit Project Structure
+
+## Overview
+Production-ready Telegram Mini App for AI-powered supplement and workout recommendations.
+
+## Architecture
+- **Frontend**: React + TypeScript, Telegram Mini Apps SDK, mobile-first
+- **Backend**: FastAPI (async), Python 3.11+, modular architecture
+- **Database**: PostgreSQL with async SQLAlchemy
+- **Deployment**: Docker containers, Azure Container Apps ready, stateless backend
+
+## Key Directories
+- `frontend/` - React TypeScript Mini App
+- `backend/` - FastAPI application
+  - `app/` - Main application code
+  - `prompts/` - LLM prompt templates
+  - `alembic/` - Database migrations
+- `infra/` - Docker, docker-compose, deployment configs
+- `docs/` - Documentation
+
+## Core Business Logic
+1. Telegram auth → Track selection → Form → Anti-fraud → Demo → Paywall → Payment → Full answer + PDF → History → Trainer referral
+
+## Critical Requirements
+- **Token efficiency**: 2-stage anti-fraud pipeline (rule-based + small LLM)
+- **User limits**: 1 demo per track, then payment required
+- **Trainer referral**: High priority, attribution tracking
+- **Security**: Telegram initData validation, rate limiting
+- **Stateless**: All state in database, externalized config

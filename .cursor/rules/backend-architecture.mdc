@@ -1,0 +1,33 @@
+---
+globs: backend/**/*.py
+---
+# Backend Architecture Rules
+
+## FastAPI Structure
+- Async endpoints only
+- Modular: separate routers for auth, requests, payments, trainers, admin
+- LLM provider abstraction layer
+- Stateless: no in-memory state, all in DB
+
+## Database
+- SQLAlchemy 2.0 async
+- Alembic migrations
+- Models: User, Request, Payment, DemoUsage, FullAnswer, Lead, Trainer, Exercise, Supplement
+
+## Anti-Fraud Pipeline
+**Stage 1**: Rule-based checks (empty, unrealistic values, prompt injection patterns, language)
+**Stage 2**: Structured validation (form completeness, actionable request)
+
+## User Limits
+- Track demo usage per user per track in `demo_usage` table
+- Enforce at endpoint level before processing
+
+## Prompts
+- All prompts in `backend/prompts/` as separate files
+- Include disclaimer: "I am just an AI and this is not a medical consultation"
+- Optimized for low token usage
+
+## Security
+- Validate Telegram initData with JWT
+- Rate limiting with aiolimiter
+- Environment variables via pydantic-settings

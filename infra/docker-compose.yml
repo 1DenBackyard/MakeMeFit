@@ -1,0 +1,62 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: makemefit-postgres
+    environment:
+      POSTGRES_DB: makemefit
+      POSTGRES_USER: makemefit
+      POSTGRES_PASSWORD: makemefit
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U makemefit"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile
+    container_name: makemefit-backend
+    env_file:
+      - ../backend/.env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://makemefit:makemefit@postgres:5432/makemefit
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../backend:/app
+      - pdf_storage:/app/pdfs
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: frontend/Dockerfile
+    container_name: makemefit-frontend
+    env_file:
+      - ../frontend/.env
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+    volumes:
+      - ../frontend:/app
+      - /app/node_modules
+
+volumes:
+  postgres_data:
+  pdf_storage:
