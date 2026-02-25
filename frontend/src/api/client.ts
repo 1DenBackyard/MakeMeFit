@@ -29,15 +29,11 @@ class ApiClient {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
-    const token = this.getToken();
+    // No auth token needed - backend will use mock user automatically
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
       ...options.headers,
     };
-
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
 
     const url = `${API_BASE_URL}${endpoint}`;
     console.log(`[API] ${options.method || 'GET'} ${url}`);

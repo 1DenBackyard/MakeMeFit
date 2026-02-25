@@ -25,51 +25,17 @@ export default function App() {
   const [toast, setToast] = React.useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const currentRequestRef = useRef<RequestResponse | null>(null);
 
-  // Auth on mount
+  // Skip auth completely - go directly to track selection
   useEffect(() => {
     if (!ready) {
-      console.log('[Auth] Waiting for Telegram WebApp to be ready...');
+      console.log('[App] Waiting for Telegram WebApp to be ready...');
       return;
     }
 
-    // Try real auth first, fallback to mock if initData is missing
-    const authenticate = async () => {
-      try {
-        if (initData && initData.trim()) {
-          console.log('[Auth] Attempting Telegram authentication...');
-          console.log('[Auth] initData length:', initData.length);
-          console.log('[Auth] initData preview:', initData.substring(0, 50) + '...');
-          
-          dispatch({ type: 'AUTH_START' });
-          const response = await authTelegram(initData);
-          console.log('[Auth] ✅ Telegram authentication successful', { userId: response.user.id });
-          dispatch({ type: 'AUTH_SUCCESS' });
-        } else {
-          console.warn('[Auth] ⚠️ initData missing, using mock authentication');
-          await authDevMock();
-          console.log('[Auth] ✅ Mock authentication successful');
-          dispatch({ type: 'AUTH_SUCCESS' });
-        }
-      } catch (err) {
-        console.error('[Auth] ❌ Authentication failed:', err);
-        
-        let errorMessage = 'Ошибка аутентификации';
-        if (err instanceof Error) {
-          errorMessage = err.message;
-          if (err.message.includes('401') || err.message.includes('Invalid')) {
-            errorMessage = 'Неверные данные Telegram. Проверьте настройки бота.';
-          } else if (err.message.includes('Network') || err.message.includes('fetch')) {
-            errorMessage = 'Не удалось подключиться к серверу. Проверьте соединение.';
-          }
-        }
-        
-        dispatch({ type: 'AUTH_ERROR', error: errorMessage });
-        setToast({ message: errorMessage, type: 'error' });
-      }
-    };
-
-    authenticate();
-  }, [ready, initData]);
+    // No auth needed - backend will use mock user automatically
+    console.log('[App] Skipping authentication, going to track selection');
+    dispatch({ type: 'AUTH_SUCCESS' });
+  }, [ready]);
 
   const handleUnlock = useCallback(async () => {
     if (state.type !== 'demo' && state.type !== 'paywall') return;
