@@ -1,4 +1,4 @@
-import React, { useEffect, useReducer, useRef } from 'react';
+import React, { useEffect, useReducer, useRef, useCallback } from 'react';
 import { useTelegram } from '../hooks/useTelegram';
 import { authTelegram } from '../api/auth';
 import { createRequest, getDemo, generateFullAnswer, getHistory, RequestResponse } from '../api/requests';
@@ -15,6 +15,8 @@ import { TrainerReferral } from '../components/TrainerReferral';
 import { Screen } from '../components/ui/Screen';
 import { Loader } from '../components/ui/Loader';
 import { Button } from '../components/ui/Button';
+import { Toast } from '../components/ui/Toast';
+
 const initialState: AppState = { type: 'loading' };
 
 export default function App() {
@@ -42,14 +44,46 @@ export default function App() {
     authenticate();
   }, [ready, initData]);
 
+  const handleUnlock = useCallback(async () => {
+    if (state.type !== 'demo' && state.type !== 'paywall') return;
+
+    try {
+      dispatch({ type: 'UNLOCK_START' });
+      if (WebApp?.MainButton) {
+        WebApp.MainButton.showProgress();
+      }
+
+      const request = state.type === 'demo' || state.type === 'paywall' ? state.request : null;
+      if (!request) return;
+
+      const answer = await generateFullAnswer(request.id);
+      
+      if (WebApp?.MainButton) {
+        WebApp.MainButton.hideProgress();
+      }
+
+      dispatch({ type: 'UNLOCK_SUCCESS', answer });
+      setToast({ message: 'Full plan unlocked!', type: 'success' });
+    } catch (err) {
+      if (WebApp?.MainButton) {
+        WebApp.MainButton.hideProgress();
+      }
+      const errorMessage = err instanceof Error ? err.message : 'Failed to unlock full plan';
+      dispatch({ type: 'UNLOCK_ERROR', error: errorMessage });
+      setToast({ message: errorMessage, type: 'error' });
+    }
+  }, [state, WebApp]);
+
   // Configure Telegram MainButton based on state
   useEffect(() => {
     if (!WebApp?.MainButton) return;
 
     const mainButton = WebApp.MainButton;
     
-    // Clean up previous handlers
-    mainButton.offClick(() => {});
+    // Create stable handler
+    const unlockHandler = () => {
+      handleUnlock();
+    };
     
     switch (state.type) {
       case 'form':
@@ -60,23 +94,16 @@ export default function App() {
       case 'paywall':
         mainButton.setText('Unlock Full Plan');
         mainButton.show();
-        mainButton.onClick(() => {
-          handleUnlock();
-        });
+        mainButton.onClick(unlockHandler);
         break;
       default:
         mainButton.hide();
     }
     
     return () => {
-      mainButton.offClick(() => {});
+      mainButton.offClick(unlockHandler);
     };
   }, [state.type, WebApp, handleUnlock]);
-
-    return () => {
-      mainButton.offClick(() => {});
-    };
-  }, [state, WebApp]);
 
   const handleTrackSelect = (track: 'supplements' | 'workouts') => {
     dispatch({ type: 'SELECT_TRACK', track });
@@ -97,7 +124,7 @@ export default function App() {
       // Create request
       const request = await createRequest({
         track: state.track,
-        form_data: normalizedData,
+        form_data: normalizedData as Record<string, unknown>,
       });
       currentRequestRef.current = request;
 
@@ -119,33 +146,6 @@ export default function App() {
     }
   };
 
-  const handleUnlock = async () => {
-    if (state.type !== 'demo' && state.type !== 'paywall') return;
-
-    try {
-      dispatch({ type: 'UNLOCK_START' });
-      if (WebApp?.MainButton) {
-        WebApp.MainButton.showProgress();
-      }
-
-      const request = state.request;
-      const answer = await generateFullAnswer(request.id);
-      
-      if (WebApp?.MainButton) {
-        WebApp.MainButton.hideProgress();
-      }
-
-      dispatch({ type: 'UNLOCK_SUCCESS', answer });
-      setToast({ message: 'Full plan unlocked!', type: 'success' });
-    } catch (err) {
-      if (WebApp?.MainButton) {
-        WebApp.MainButton.hideProgress();
-      }
-      const errorMessage = err instanceof Error ? err.message : 'Failed to unlock full plan';
-      dispatch({ type: 'UNLOCK_ERROR', error: errorMessage });
-      setToast({ message: errorMessage, type: 'error' });
-    }
-  };
 
   const handleShowHistory = async () => {
     try {
