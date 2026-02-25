@@ -13,7 +13,7 @@ export function TrackSelection({ onSelect }: TrackSelectionProps) {
       <div className="p-6 max-w-md mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold mb-2">MakeMeFit</h1>
-          <p className="text-text-secondary">Choose your path to better health</p>
+          <p className="text-text-secondary">Выберите свой путь к здоровью</p>
         </div>
 
         <div className="space-y-4">
@@ -23,9 +23,9 @@ export function TrackSelection({ onSelect }: TrackSelectionProps) {
             className="text-center cursor-pointer"
           >
             <div className="text-5xl mb-4">💊</div>
-            <h2 className="text-2xl font-semibold mb-2">Supplements</h2>
+            <h2 className="text-2xl font-semibold mb-2">Добавки</h2>
             <p className="text-text-secondary">
-              Personalized supplement recommendations based on your goals and health profile
+              Персонализированные рекомендации по добавкам на основе ваших целей и профиля здоровья
             </p>
           </Card>
 
@@ -35,9 +35,9 @@ export function TrackSelection({ onSelect }: TrackSelectionProps) {
             className="text-center cursor-pointer"
           >
             <div className="text-5xl mb-4">🏋️</div>
-            <h2 className="text-2xl font-semibold mb-2">Workouts</h2>
+            <h2 className="text-2xl font-semibold mb-2">Тренировки</h2>
             <p className="text-text-secondary">
-              Custom workout plans tailored to your fitness level and preferences
+              Индивидуальные планы тренировок, адаптированные под ваш уровень подготовки и предпочтения
             </p>
           </Card>
         </div>

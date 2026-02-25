@@ -27,19 +27,19 @@ export function WorkoutsForm({ onSubmit }: WorkoutsFormProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const fitnessLevels = [
-    { value: 'beginner', label: 'Beginner' },
-    { value: 'intermediate', label: 'Intermediate' },
-    { value: 'advanced', label: 'Advanced' },
+    { value: 'beginner', label: 'Начинающий' },
+    { value: 'intermediate', label: 'Средний' },
+    { value: 'advanced', label: 'Продвинутый' },
   ];
 
-  const equipmentOptions = ['None', 'Dumbbells', 'Barbell', 'Resistance Bands', 'Pull-up Bar', 'Gym Access'];
-  const activityOptions = ['Strength Training', 'Cardio', 'HIIT', 'Yoga', 'Pilates', 'Running', 'Cycling'];
+  const equipmentOptions = ['Нет', 'Гантели', 'Штанга', 'Эспандеры', 'Турник', 'Доступ в зал'];
+  const activityOptions = ['Силовые тренировки', 'Кардио', 'HIIT', 'Йога', 'Пилатес', 'Бег', 'Велоспорт'];
 
   const toggleArrayItem = (array: string[], item: string) => {
-    if (item === 'None') {
+    if (item === 'Нет') {
       return [];
     }
-    if (array.includes('None')) {
+    if (array.includes('Нет')) {
       return [item];
     }
     return array.includes(item)
@@ -52,22 +52,22 @@ export function WorkoutsForm({ onSubmit }: WorkoutsFormProps) {
 
     if (stepNum === 1) {
       if (!formData.goal.trim()) {
-        newErrors.goal = 'Goal is required';
+        newErrors.goal = 'Цель обязательна';
       }
       if (!formData.age || Number(formData.age) < 10 || Number(formData.age) > 120) {
-        newErrors.age = 'Valid age (10-120) is required';
+        newErrors.age = 'Введите корректный возраст (10-120)';
       }
     }
 
     if (stepNum === 2) {
       if (!formData.time_per_week || Number(formData.time_per_week) < 1 || Number(formData.time_per_week) > 14) {
-        newErrors.time_per_week = 'Valid hours (1-14) is required';
+        newErrors.time_per_week = 'Введите корректное количество часов (1-14)';
       }
       if (formData.weight && (Number(formData.weight) < 20 || Number(formData.weight) > 500)) {
-        newErrors.weight = 'Valid weight (20-500 kg)';
+        newErrors.weight = 'Введите корректный вес (20-500 кг)';
       }
       if (formData.height && (Number(formData.height) < 100 || Number(formData.height) > 250)) {
-        newErrors.height = 'Valid height (100-250 cm)';
+        newErrors.height = 'Введите корректный рост (100-250 см)';
       }
     }
 
@@ -103,8 +103,8 @@ export function WorkoutsForm({ onSubmit }: WorkoutsFormProps) {
       <Card>
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
-            <h2 className="text-2xl font-bold">Tell Us About Your Fitness Goals</h2>
-            <span className="text-sm text-text-secondary">Step {step}/3</span>
+            <h2 className="text-2xl font-bold">Расскажите о ваших фитнес-целях</h2>
+            <span className="text-sm text-text-secondary">Шаг {step}/3</span>
           </div>
           <div className="w-full bg-surface rounded-full h-2">
             <div
@@ -118,10 +118,10 @@ export function WorkoutsForm({ onSubmit }: WorkoutsFormProps) {
           {step === 1 && (
             <div className="space-y-4">
               <TextArea
-                label="What's your goal? *"
+                label="Какая у вас цель? *"
                 value={formData.goal}
                 onChange={(e) => setFormData({ ...formData, goal: e.target.value })}
-                placeholder="e.g., Build muscle, lose weight, improve endurance..."
+                placeholder="Например: набрать мышечную массу, похудеть, улучшить выносливость..."
                 required
                 rows={4}
                 error={errors.goal}
@@ -140,7 +140,7 @@ export function WorkoutsForm({ onSubmit }: WorkoutsFormProps) {
               />
 
               <Select
-                label="Fitness Level *"
+                label="Уровень подготовки *"
                 value={formData.fitness_level}
                 onChange={(e) => setFormData({ ...formData, fitness_level: e.target.value })}
                 options={fitnessLevels}
@@ -149,10 +149,10 @@ export function WorkoutsForm({ onSubmit }: WorkoutsFormProps) {
 
               <div className="flex gap-3 pt-4">
                 <Button type="button" variant="outline" onClick={handleBack} className="flex-1" disabled>
-                  Back
+                  Назад
                 </Button>
                 <Button type="button" onClick={handleNext} className="flex-1">
-                  Next
+                  Далее
                 </Button>
               </div>
             </div>
@@ -161,7 +161,7 @@ export function WorkoutsForm({ onSubmit }: WorkoutsFormProps) {
           {step === 2 && (
             <div className="space-y-4">
               <Input
-                label="Time per Week (hours) *"
+                label="Время в неделю (часов) *"
                 type="number"
                 value={formData.time_per_week}
                 onChange={(e) => setFormData({ ...formData, time_per_week: e.target.value })}
@@ -209,8 +209,8 @@ export function WorkoutsForm({ onSubmit }: WorkoutsFormProps) {
           {step === 3 && (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-text mb-2">
-                  Available Equipment
+                  <label className="block text-sm font-semibold text-text mb-2">
+                  Доступное оборудование
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {equipmentOptions.map((eq) => (
@@ -231,8 +231,8 @@ export function WorkoutsForm({ onSubmit }: WorkoutsFormProps) {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-text mb-2">
-                  Preferred Activities
+                  <label className="block text-sm font-semibold text-text mb-2">
+                  Предпочитаемые виды активности
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {activityOptions.map((act) => (
@@ -253,10 +253,10 @@ export function WorkoutsForm({ onSubmit }: WorkoutsFormProps) {
               </div>
 
               <TextArea
-                label="Injuries or Limitations"
+                label="Травмы или ограничения"
                 value={formData.injuries}
                 onChange={(e) => setFormData({ ...formData, injuries: e.target.value })}
-                placeholder="List any injuries or physical limitations..."
+                placeholder="Укажите любые травмы или физические ограничения..."
                 rows={3}
               />
 
@@ -264,8 +264,8 @@ export function WorkoutsForm({ onSubmit }: WorkoutsFormProps) {
                 <Button type="button" variant="outline" onClick={handleBack} className="flex-1">
                   Back
                 </Button>
-                <Button type="submit" className="flex-1">
-                  Get Workout Plan
+                  <Button type="submit" className="flex-1">
+                  Получить план тренировок
                 </Button>
               </div>
             </div>

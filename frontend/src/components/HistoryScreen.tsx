@@ -12,8 +12,8 @@ export function HistoryScreen({ requests }: HistoryScreenProps) {
   if (requests.length === 0) {
     return (
       <div className="p-6 text-center">
-        <p className="text-text-secondary mb-4">No requests yet</p>
-        <Button onClick={() => window.location.reload()}>Start New Request</Button>
+        <p className="text-text-secondary mb-4">Запросов пока нет</p>
+        <Button onClick={() => window.location.reload()}>Создать новый запрос</Button>
       </div>
     );
   }
@@ -43,7 +43,7 @@ export function HistoryScreen({ requests }: HistoryScreenProps) {
                   // This would require state management to show full answer
                 }}
               >
-                View Full Plan
+                Просмотреть полный план
               </Button>
             </div>
           )}

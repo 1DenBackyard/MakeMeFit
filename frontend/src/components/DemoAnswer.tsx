@@ -15,8 +15,8 @@ export function DemoAnswer({ demo, onUnlock, requiresPayment = false }: DemoAnsw
     <div className="p-4 max-w-2xl mx-auto space-y-4">
       <Card>
         <div className="mb-4">
-          <h2 className="text-2xl font-bold mb-2">Your Demo Recommendation</h2>
-          <p className="text-text-secondary">Preview of your personalized plan</p>
+          <h2 className="text-2xl font-bold mb-2">Ваша демо-рекомендация</h2>
+          <p className="text-text-secondary">Предпросмотр вашего персонализированного плана</p>
         </div>
 
         <div className="bg-surface rounded-lg p-4 mb-4">
@@ -28,9 +28,9 @@ export function DemoAnswer({ demo, onUnlock, requiresPayment = false }: DemoAnsw
 
         {requiresPayment && (
           <div className="bg-warning/10 border-2 border-warning rounded-lg p-4 mb-4">
-            <p className="text-sm font-semibold text-warning mb-1">Demo Limit Reached</p>
+            <p className="text-sm font-semibold text-warning mb-1">Достигнут лимит демо</p>
             <p className="text-sm text-text-secondary">
-              You've already used your free demo for this track. Unlock the full plan to continue.
+              Вы уже использовали бесплатный демо для этого направления. Разблокируйте полный план, чтобы продолжить.
             </p>
           </div>
         )}
@@ -41,7 +41,7 @@ export function DemoAnswer({ demo, onUnlock, requiresPayment = false }: DemoAnsw
           <div className="text-4xl mb-3">🔒</div>
           <p className="font-semibold mb-2">{demo.message}</p>
           <Button onClick={onUnlock} size="lg" className="w-full">
-            Unlock Full Plan + PDF + History
+            Разблокировать полный план + PDF + История
           </Button>
         </div>
       </Card>

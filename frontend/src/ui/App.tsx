@@ -25,29 +25,51 @@ export default function App() {
   const [toast, setToast] = React.useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const currentRequestRef = useRef<RequestResponse | null>(null);
 
-  // Skip auth - use mock token and go directly to track selection
+  // Auth on mount
   useEffect(() => {
     if (!ready) {
-      console.log('[App] Waiting for Telegram WebApp to be ready...');
+      console.log('[Auth] Waiting for Telegram WebApp to be ready...');
       return;
     }
 
-    // Get mock token for development (no real auth)
-    const getMockAuth = async () => {
+    // Try real auth first, fallback to mock if initData is missing
+    const authenticate = async () => {
       try {
-        console.log('[App] Getting mock authentication token...');
-        await authDevMock();
-        console.log('[App] Mock authentication successful');
-        dispatch({ type: 'AUTH_SUCCESS' });
+        if (initData && initData.trim()) {
+          console.log('[Auth] Attempting Telegram authentication...');
+          console.log('[Auth] initData length:', initData.length);
+          console.log('[Auth] initData preview:', initData.substring(0, 50) + '...');
+          
+          dispatch({ type: 'AUTH_START' });
+          const response = await authTelegram(initData);
+          console.log('[Auth] ✅ Telegram authentication successful', { userId: response.user.id });
+          dispatch({ type: 'AUTH_SUCCESS' });
+        } else {
+          console.warn('[Auth] ⚠️ initData missing, using mock authentication');
+          await authDevMock();
+          console.log('[Auth] ✅ Mock authentication successful');
+          dispatch({ type: 'AUTH_SUCCESS' });
+        }
       } catch (err) {
-        console.error('[App] Failed to get mock token:', err);
-        // Still proceed to track selection even if mock auth fails
-        dispatch({ type: 'AUTH_SUCCESS' });
+        console.error('[Auth] ❌ Authentication failed:', err);
+        
+        let errorMessage = 'Ошибка аутентификации';
+        if (err instanceof Error) {
+          errorMessage = err.message;
+          if (err.message.includes('401') || err.message.includes('Invalid')) {
+            errorMessage = 'Неверные данные Telegram. Проверьте настройки бота.';
+          } else if (err.message.includes('Network') || err.message.includes('fetch')) {
+            errorMessage = 'Не удалось подключиться к серверу. Проверьте соединение.';
+          }
+        }
+        
+        dispatch({ type: 'AUTH_ERROR', error: errorMessage });
+        setToast({ message: errorMessage, type: 'error' });
       }
     };
 
-    getMockAuth();
-  }, [ready]);
+    authenticate();
+  }, [ready, initData]);
 
   const handleUnlock = useCallback(async () => {
     if (state.type !== 'demo' && state.type !== 'paywall') return;
@@ -61,19 +83,31 @@ export default function App() {
       const request = state.type === 'demo' || state.type === 'paywall' ? state.request : null;
       if (!request) return;
 
+      console.log('[Unlock] Generating full answer for request:', request.id);
       const answer = await generateFullAnswer(request.id);
+      console.log('[Unlock] ✅ Full answer generated:', { 
+        request_id: answer.request_id,
+        has_pdf: !!answer.pdf_url,
+      });
       
       if (WebApp?.MainButton) {
         WebApp.MainButton.hideProgress();
       }
 
       dispatch({ type: 'UNLOCK_SUCCESS', answer });
-      setToast({ message: 'Full plan unlocked!', type: 'success' });
+      setToast({ message: 'Полный план разблокирован!', type: 'success' });
     } catch (err) {
       if (WebApp?.MainButton) {
         WebApp.MainButton.hideProgress();
       }
-      const errorMessage = err instanceof Error ? err.message : 'Failed to unlock full plan';
+      console.error('[Unlock] ❌ Failed to unlock:', err);
+      let errorMessage = 'Не удалось разблокировать полный план';
+      if (err instanceof Error) {
+        errorMessage = err.message;
+        if (err.message.includes('payment') || err.message.includes('Payment')) {
+          errorMessage = 'Требуется оплата для разблокировки полного плана.';
+        }
+      }
       dispatch({ type: 'UNLOCK_ERROR', error: errorMessage });
       setToast({ message: errorMessage, type: 'error' });
     }
@@ -97,7 +131,7 @@ export default function App() {
         break;
       case 'demo':
       case 'paywall':
-        mainButton.setText('Unlock Full Plan');
+        mainButton.setText('Разблокировать полный план');
         mainButton.show();
         mainButton.onClick(unlockHandler);
         break;
@@ -125,27 +159,63 @@ export default function App() {
 
       // Normalize form data
       const normalizedData = normalizeFormData(state.track, formData);
+      
+      console.log('[Form] Submitting form:', {
+        track: state.track,
+        normalizedDataKeys: Object.keys(normalizedData),
+        normalizedDataPreview: JSON.stringify(normalizedData).substring(0, 200) + '...',
+      });
 
       // Create request
-      const request = await createRequest({
+      const requestPayload = {
         track: state.track,
         form_data: normalizedData as Record<string, unknown>,
+      };
+      
+      console.log('[Form] Request payload:', {
+        track: requestPayload.track,
+        form_data_keys: Object.keys(requestPayload.form_data),
       });
+      
+      const request = await createRequest(requestPayload);
+      console.log('[Form] ✅ Request created:', { id: request.id, status: request.status });
       currentRequestRef.current = request;
 
       // Get demo answer
+      console.log('[Form] Fetching demo for request:', request.id);
       const demo = await getDemo(request.id);
+      console.log('[Form] ✅ Demo received:', { 
+        request_id: demo.request_id, 
+        requires_payment: demo.requires_payment,
+        message: demo.message,
+      });
       
       if (WebApp?.MainButton) {
         WebApp.MainButton.hideProgress();
       }
 
       dispatch({ type: 'SUBMIT_FORM_SUCCESS', request, demo });
+      setToast({ message: 'Запрос успешно создан!', type: 'success' });
     } catch (err) {
       if (WebApp?.MainButton) {
         WebApp.MainButton.hideProgress();
       }
-      const errorMessage = err instanceof Error ? err.message : 'Failed to create request';
+      
+      console.error('[Form] ❌ Form submission failed:', err);
+      
+      let errorMessage = 'Не удалось создать запрос';
+      if (err instanceof Error) {
+        errorMessage = err.message;
+        // Handle anti-fraud rejection
+        if (err.message.includes('rejected') || err.message.includes('anti-fraud')) {
+          errorMessage = 'Запрос отклонен системой проверки. Пожалуйста, проверьте заполненные данные.';
+        } else if (err.message.includes('demo') && err.message.includes('limit')) {
+          errorMessage = 'Вы уже использовали бесплатный демо для этого направления. Разблокируйте полный план.';
+        } else if (err.message.includes('401') || err.message.includes('Unauthorized')) {
+          errorMessage = 'Ошибка авторизации. Пожалуйста, перезагрузите приложение.';
+        }
+      }
+      
       dispatch({ type: 'SUBMIT_FORM_ERROR', error: errorMessage });
       setToast({ message: errorMessage, type: 'error' });
     }
@@ -206,16 +276,16 @@ export default function App() {
       <Screen>
         <div className="flex flex-col items-center justify-center min-h-screen p-6">
           <div className="text-center max-w-md">
-            <h2 className="text-2xl font-bold text-error mb-4">Authentication Failed</h2>
-            <p className="text-text-secondary mb-6">{state.error || 'Something went wrong'}</p>
+            <h2 className="text-2xl font-bold text-error mb-4">Ошибка аутентификации</h2>
+            <p className="text-text-secondary mb-6">{state.error || 'Что-то пошло не так'}</p>
             <div className="space-y-3">
-              <Button onClick={() => window.location.reload()}>Retry</Button>
+              <Button onClick={() => window.location.reload()}>Повторить</Button>
               <div className="text-xs text-text-light mt-4 p-3 bg-surface rounded">
-                <p className="font-semibold mb-1">Troubleshooting:</p>
+                <p className="font-semibold mb-1">Решение проблем:</p>
                 <ul className="text-left space-y-1 list-disc list-inside">
-                  <li>Make sure you opened this app from Telegram</li>
-                  <li>Check that bot token is configured correctly</li>
-                  <li>Try closing and reopening the app</li>
+                  <li>Убедитесь, что открыли приложение из Telegram</li>
+                  <li>Проверьте, что токен бота настроен правильно</li>
+                  <li>Попробуйте закрыть и открыть приложение заново</li>
                 </ul>
               </div>
             </div>
@@ -230,14 +300,14 @@ export default function App() {
       <Screen>
         <div className="flex flex-col items-center justify-center min-h-screen p-6">
           <div className="text-center max-w-md">
-            <h2 className="text-2xl font-bold text-error mb-4">Oops!</h2>
+            <h2 className="text-2xl font-bold text-error mb-4">Упс!</h2>
             <p className="text-text-secondary mb-6">{state.message}</p>
             <div className="flex gap-3">
               {state.canRetry && (
-                <Button onClick={handleGoBack}>Go Back</Button>
+                <Button onClick={handleGoBack}>Назад</Button>
               )}
               <Button variant="outline" onClick={() => dispatch({ type: 'RESET' })}>
-                Start Over
+                Начать заново
               </Button>
             </div>
           </div>
@@ -260,10 +330,10 @@ export default function App() {
         header={
           <div className="px-4 py-3 flex items-center gap-3">
             <Button variant="ghost" size="sm" onClick={handleGoBack}>
-              ← Back
+              ← Назад
             </Button>
             <h1 className="text-lg font-semibold flex-1">
-              {state.track === 'supplements' ? 'Supplements' : 'Workouts'}
+              {state.track === 'supplements' ? 'Добавки' : 'Тренировки'}
             </h1>
           </div>
         }
@@ -285,7 +355,7 @@ export default function App() {
             <Button variant="ghost" size="sm" onClick={handleGoBack}>
               ← Back
             </Button>
-            <h1 className="text-lg font-semibold flex-1">Demo Plan</h1>
+            <h1 className="text-lg font-semibold flex-1">Демо-план</h1>
           </div>
         }
       >
@@ -306,9 +376,9 @@ export default function App() {
             <Button variant="ghost" size="sm" onClick={handleGoBack}>
               ← Back
             </Button>
-            <h1 className="text-lg font-semibold flex-1">Your Plan</h1>
+            <h1 className="text-lg font-semibold flex-1">Ваш план</h1>
             <Button variant="ghost" size="sm" onClick={handleShowHistory}>
-              History
+              История
             </Button>
           </div>
         }
@@ -329,7 +399,7 @@ export default function App() {
             <Button variant="ghost" size="sm" onClick={handleGoBack}>
               ← Back
             </Button>
-            <h1 className="text-lg font-semibold flex-1">History</h1>
+            <h1 className="text-lg font-semibold flex-1">История</h1>
           </div>
         }
       >
@@ -347,7 +417,7 @@ export default function App() {
               <Button variant="ghost" size="sm" onClick={handleGoBack}>
                 ← Back
               </Button>
-              <h1 className="text-lg font-semibold flex-1">Trainer Match</h1>
+              <h1 className="text-lg font-semibold flex-1">Подбор тренера</h1>
             </div>
           }
         >

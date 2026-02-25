@@ -24,8 +24,8 @@ export function FullAnswer({ answer, onTrainerReferral }: FullAnswerProps) {
     <div className="p-4 max-w-2xl mx-auto space-y-4">
       <Card>
         <div className="mb-4">
-          <h2 className="text-2xl font-bold mb-2">Your Complete Plan</h2>
-          <p className="text-text-secondary">Your personalized recommendations</p>
+          <h2 className="text-2xl font-bold mb-2">Ваш полный план</h2>
+          <p className="text-text-secondary">Ваши персонализированные рекомендации</p>
         </div>
 
         <div className="bg-surface rounded-lg p-4 mb-4">
@@ -41,7 +41,7 @@ export function FullAnswer({ answer, onTrainerReferral }: FullAnswerProps) {
             variant="secondary"
             className="w-full mb-4"
           >
-            📄 Download PDF
+            📄 Скачать PDF
             {answer.pdf_size_bytes && (
               <span className="ml-2 text-sm opacity-75">
                 ({(answer.pdf_size_bytes / 1024).toFixed(1)} KB)
@@ -53,13 +53,13 @@ export function FullAnswer({ answer, onTrainerReferral }: FullAnswerProps) {
 
       <Card className="bg-primary-light border-2 border-primary text-center">
         <div className="text-5xl mb-4">👨‍🏫</div>
-        <h3 className="text-xl font-semibold mb-2">Want Personalized Guidance?</h3>
+        <h3 className="text-xl font-semibold mb-2">Нужна персональная поддержка?</h3>
         <p className="text-text-secondary mb-4">
-          Connect with a certified trainer who can provide personalized coaching
-          and help you achieve your goals faster.
+          Свяжитесь с сертифицированным тренером, который может предоставить персональное руководство
+          и помочь вам быстрее достичь ваших целей.
         </p>
         <Button onClick={onTrainerReferral} size="lg" className="w-full">
-          Find a Trainer
+          Найти тренера
         </Button>
       </Card>
     </div>

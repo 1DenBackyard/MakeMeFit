@@ -28,28 +28,28 @@ export function SupplementsForm({ onSubmit }: SupplementsFormProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const activityLevels = [
-    { value: 'sedentary', label: 'Sedentary' },
-    { value: 'light', label: 'Light' },
-    { value: 'moderate', label: 'Moderate' },
-    { value: 'active', label: 'Active' },
-    { value: 'very_active', label: 'Very Active' },
+    { value: 'sedentary', label: 'Малоподвижный' },
+    { value: 'light', label: 'Легкая активность' },
+    { value: 'moderate', label: 'Умеренная активность' },
+    { value: 'active', label: 'Активный' },
+    { value: 'very_active', label: 'Очень активный' },
   ];
 
   const budgetOptions = [
-    { value: 'low', label: 'Low' },
-    { value: 'moderate', label: 'Moderate' },
-    { value: 'high', label: 'High' },
+    { value: 'low', label: 'Низкий' },
+    { value: 'moderate', label: 'Средний' },
+    { value: 'high', label: 'Высокий' },
   ];
 
-  const restrictionOptions = ['Gluten', 'Dairy', 'Soy', 'Nuts', 'Fish', 'Eggs', 'None'];
-  const supplementOptions = ['Multivitamin', 'Protein Powder', 'Creatine', 'Omega-3', 'Vitamin D', 'None'];
-  const conditionOptions = ['Diabetes', 'Hypertension', 'Heart Disease', 'Kidney Issues', 'Liver Issues', 'None'];
+  const restrictionOptions = ['Глютен', 'Молочные продукты', 'Соя', 'Орехи', 'Рыба', 'Яйца', 'Нет'];
+  const supplementOptions = ['Мультивитамины', 'Протеин', 'Креатин', 'Омега-3', 'Витамин D', 'Нет'];
+  const conditionOptions = ['Диабет', 'Гипертония', 'Болезни сердца', 'Проблемы с почками', 'Проблемы с печенью', 'Нет'];
 
   const toggleArrayItem = (array: string[], item: string) => {
-    if (item === 'None') {
+    if (item === 'Нет') {
       return [];
     }
-    if (array.includes('None')) {
+    if (array.includes('Нет')) {
       return [item];
     }
     return array.includes(item)
@@ -62,19 +62,19 @@ export function SupplementsForm({ onSubmit }: SupplementsFormProps) {
 
     if (stepNum === 1) {
       if (!formData.goal.trim()) {
-        newErrors.goal = 'Goal is required';
+        newErrors.goal = 'Цель обязательна';
       }
       if (!formData.age || Number(formData.age) < 10 || Number(formData.age) > 120) {
-        newErrors.age = 'Valid age (10-120) is required';
+        newErrors.age = 'Введите корректный возраст (10-120)';
       }
     }
 
     if (stepNum === 2) {
       if (formData.weight && (Number(formData.weight) < 20 || Number(formData.weight) > 500)) {
-        newErrors.weight = 'Valid weight (20-500 kg)';
+        newErrors.weight = 'Введите корректный вес (20-500 кг)';
       }
       if (formData.height && (Number(formData.height) < 100 || Number(formData.height) > 250)) {
-        newErrors.height = 'Valid height (100-250 cm)';
+        newErrors.height = 'Введите корректный рост (100-250 см)';
       }
     }
 
@@ -109,8 +109,8 @@ export function SupplementsForm({ onSubmit }: SupplementsFormProps) {
       <Card>
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
-            <h2 className="text-2xl font-bold">Tell Us About Yourself</h2>
-            <span className="text-sm text-text-secondary">Step {step}/3</span>
+            <h2 className="text-2xl font-bold">Расскажите о себе</h2>
+            <span className="text-sm text-text-secondary">Шаг {step}/3</span>
           </div>
           <div className="w-full bg-surface rounded-full h-2">
             <div
@@ -124,10 +124,10 @@ export function SupplementsForm({ onSubmit }: SupplementsFormProps) {
           {step === 1 && (
             <div className="space-y-4">
               <TextArea
-                label="What's your goal? *"
+                label="Какая у вас цель? *"
                 value={formData.goal}
                 onChange={(e) => setFormData({ ...formData, goal: e.target.value })}
-                placeholder="e.g., Build muscle, improve energy, support recovery..."
+                placeholder="Например: набрать мышечную массу, повысить энергию, поддержать восстановление..."
                 required
                 rows={4}
                 error={errors.goal}
@@ -147,10 +147,10 @@ export function SupplementsForm({ onSubmit }: SupplementsFormProps) {
 
               <div className="flex gap-3 pt-4">
                 <Button type="button" variant="outline" onClick={handleBack} className="flex-1" disabled>
-                  Back
+                  Назад
                 </Button>
                 <Button type="button" onClick={handleNext} className="flex-1">
-                  Next
+                  Далее
                 </Button>
               </div>
             </div>
@@ -183,7 +183,7 @@ export function SupplementsForm({ onSubmit }: SupplementsFormProps) {
               </div>
 
               <Select
-                label="Activity Level"
+                label="Уровень активности"
                 value={formData.activity_level}
                 onChange={(e) => setFormData({ ...formData, activity_level: e.target.value })}
                 options={activityLevels}
@@ -203,8 +203,8 @@ export function SupplementsForm({ onSubmit }: SupplementsFormProps) {
           {step === 3 && (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-text mb-2">
-                  Dietary Restrictions
+                  <label className="block text-sm font-semibold text-text mb-2">
+                  Диетические ограничения
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {restrictionOptions.map((option) => (
@@ -225,8 +225,8 @@ export function SupplementsForm({ onSubmit }: SupplementsFormProps) {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-text mb-2">
-                  Current Supplements/Medications
+                  <label className="block text-sm font-semibold text-text mb-2">
+                  Текущие добавки/лекарства
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {supplementOptions.map((option) => (
@@ -247,8 +247,8 @@ export function SupplementsForm({ onSubmit }: SupplementsFormProps) {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-text mb-2">
-                  Health Conditions
+                  <label className="block text-sm font-semibold text-text mb-2">
+                  Состояние здоровья
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {conditionOptions.map((option) => (
@@ -269,7 +269,7 @@ export function SupplementsForm({ onSubmit }: SupplementsFormProps) {
               </div>
 
               <Select
-                label="Budget"
+                label="Бюджет"
                 value={formData.budget}
                 onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
                 options={budgetOptions}
@@ -279,8 +279,8 @@ export function SupplementsForm({ onSubmit }: SupplementsFormProps) {
                 <Button type="button" variant="outline" onClick={handleBack} className="flex-1">
                   Back
                 </Button>
-                <Button type="submit" className="flex-1">
-                  Get Recommendations
+                  <Button type="submit" className="flex-1">
+                  Получить рекомендации
                 </Button>
               </div>
             </div>

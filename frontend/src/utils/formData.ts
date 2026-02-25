@@ -38,9 +38,9 @@ export function normalizeSupplementsForm(
     weight_kg: formData.weight ? Number(formData.weight) : undefined,
     height_cm: formData.height ? Number(formData.height) : undefined,
     activity_level: String(formData.activity_level || 'moderate'),
-    injuries_or_constraints: Array.isArray(formData.health_conditions) && formData.health_conditions.length > 0,
-    injuries_details: Array.isArray(formData.health_conditions) 
-      ? formData.health_conditions.join(', ')
+    injuries_or_constraints: Array.isArray(formData.health_conditions) && formData.health_conditions.length > 0 && !formData.health_conditions.includes('Нет'),
+    injuries_details: Array.isArray(formData.health_conditions) && !formData.health_conditions.includes('Нет')
+      ? formData.health_conditions.filter(c => c !== 'Нет').join(', ')
       : undefined,
     allergies: Array.isArray(formData.dietary_restrictions) 
       ? formData.dietary_restrictions.map(String)

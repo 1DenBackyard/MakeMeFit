@@ -15,22 +15,22 @@ export function TrainerReferral({ deepLink }: TrainerReferralProps) {
     <div className="p-6 max-w-md mx-auto">
       <Card className="text-center">
         <div className="text-6xl mb-4">👨‍🏫</div>
-        <h2 className="text-2xl font-bold mb-3">Trainer Matched!</h2>
+        <h2 className="text-2xl font-bold mb-3">Тренер подобран!</h2>
         <p className="text-text-secondary mb-6">
-          We've found a certified trainer who can help you achieve your goals.
-          Click below to connect with them on Telegram.
+          Мы нашли сертифицированного тренера, который может помочь вам достичь ваших целей.
+          Нажмите ниже, чтобы связаться с ним в Telegram.
         </p>
         
         <div className="bg-primary-light rounded-lg p-4 mb-6 text-sm text-text-secondary">
-          <p className="font-semibold mb-2">Why use the referral link?</p>
+          <p className="font-semibold mb-2">Зачем использовать реферальную ссылку?</p>
           <p>
-            This link helps us track that you came from MakeMeFit, so the trainer
-            knows your goals and can provide personalized guidance.
+            Эта ссылка помогает нам отследить, что вы пришли из MakeMeFit, поэтому тренер
+            знает ваши цели и может предоставить персонализированное руководство.
           </p>
         </div>
 
         <Button onClick={handleOpenTrainer} size="lg" className="w-full">
-          Connect with Trainer
+          Связаться с тренером
         </Button>
       </Card>
     </div>
