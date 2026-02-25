@@ -1,6 +1,6 @@
 import React, { useEffect, useReducer, useRef, useCallback } from 'react';
 import { useTelegram } from '../hooks/useTelegram';
-import { authTelegram } from '../api/auth';
+import { authTelegram, authDevMock } from '../api/auth';
 import { createRequest, getDemo, generateFullAnswer, getHistory, RequestResponse } from '../api/requests';
 import { matchTrainer, createLead } from '../api/trainers';
 import { appReducer, AppState, AppAction } from '../state/appState';
@@ -25,51 +25,29 @@ export default function App() {
   const [toast, setToast] = React.useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const currentRequestRef = useRef<RequestResponse | null>(null);
 
-  // Auth on mount
+  // Skip auth - use mock token and go directly to track selection
   useEffect(() => {
     if (!ready) {
-      console.log('[Auth] Waiting for Telegram WebApp to be ready...');
+      console.log('[App] Waiting for Telegram WebApp to be ready...');
       return;
     }
 
-    if (!initData) {
-      console.error('[Auth] initData is missing!');
-      const errorMessage = 'Telegram authentication data is missing. Please open this app from Telegram.';
-      dispatch({ type: 'AUTH_ERROR', error: errorMessage });
-      setToast({ message: errorMessage, type: 'error' });
-      return;
-    }
-
-    const authenticate = async () => {
+    // Get mock token for development (no real auth)
+    const getMockAuth = async () => {
       try {
-        console.log('[Auth] Starting authentication...');
-        dispatch({ type: 'AUTH_START' });
-        
-        const response = await authTelegram(initData);
-        console.log('[Auth] Authentication successful', response);
-        
+        console.log('[App] Getting mock authentication token...');
+        await authDevMock();
+        console.log('[App] Mock authentication successful');
         dispatch({ type: 'AUTH_SUCCESS' });
       } catch (err) {
-        console.error('[Auth] Authentication failed:', err);
-        
-        let errorMessage = 'Authentication failed';
-        if (err instanceof Error) {
-          errorMessage = err.message;
-          // Try to extract more details from error
-          if (err.message.includes('401') || err.message.includes('Invalid')) {
-            errorMessage = 'Invalid Telegram authentication. Please check bot token configuration.';
-          } else if (err.message.includes('Network') || err.message.includes('fetch')) {
-            errorMessage = 'Cannot connect to server. Please check your connection.';
-          }
-        }
-        
-        dispatch({ type: 'AUTH_ERROR', error: errorMessage });
-        setToast({ message: errorMessage, type: 'error' });
+        console.error('[App] Failed to get mock token:', err);
+        // Still proceed to track selection even if mock auth fails
+        dispatch({ type: 'AUTH_SUCCESS' });
       }
     };
 
-    authenticate();
-  }, [ready, initData]);
+    getMockAuth();
+  }, [ready]);
 
   const handleUnlock = useCallback(async () => {
     if (state.type !== 'demo' && state.type !== 'paywall') return;

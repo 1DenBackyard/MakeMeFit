@@ -11,6 +11,40 @@ from app.schemas import TelegramInitData, UserResponse
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
+@router.post("/dev/mock", response_model=dict)
+async def auth_dev_mock(
+    db: AsyncSession = Depends(get_db),
+):
+    """DEV ONLY: Create or get mock user and return token (no auth required)."""
+    # Use a fixed mock telegram_id
+    mock_telegram_id = 123456789
+    
+    # Get or create mock user
+    result = await db.execute(
+        select(User).where(User.telegram_id == mock_telegram_id)
+    )
+    user = result.scalar_one_or_none()
+    
+    if not user:
+        user = User(
+            telegram_id=mock_telegram_id,
+            username="mock_user",
+            first_name="Mock",
+            last_name="User",
+        )
+        db.add(user)
+        await db.commit()
+        await db.refresh(user)
+    
+    # Create JWT token
+    token = create_jwt_token(mock_telegram_id)
+    
+    return {
+        "token": token,
+        "user": UserResponse.model_validate(user),
+    }
+
+
 @router.post("/telegram", response_model=dict)
 async def auth_telegram(
     init_data: TelegramInitData,
