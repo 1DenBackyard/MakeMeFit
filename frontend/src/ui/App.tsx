@@ -115,9 +115,19 @@ export default function App() {
   };
 
   const handleFormSubmit = async (formData: Record<string, unknown>) => {
-    if (state.type !== 'form') return;
+    console.log('[App] handleFormSubmit called:', { 
+      stateType: state.type, 
+      formDataKeys: Object.keys(formData),
+      track: state.type === 'form' ? state.track : 'unknown'
+    });
+    
+    if (state.type !== 'form') {
+      console.error('[App] ❌ Cannot submit form: state is not "form"', { stateType: state.type });
+      return;
+    }
 
     try {
+      console.log('[App] Starting form submission...');
       dispatch({ type: 'SUBMIT_FORM_START' });
       if (WebApp?.MainButton) {
         WebApp.MainButton.showProgress();
@@ -141,8 +151,10 @@ export default function App() {
       console.log('[Form] Request payload:', {
         track: requestPayload.track,
         form_data_keys: Object.keys(requestPayload.form_data),
+        form_data: requestPayload.form_data,
       });
       
+      console.log('[Form] Calling createRequest...');
       const request = await createRequest(requestPayload);
       console.log('[Form] ✅ Request created:', { id: request.id, status: request.status });
       currentRequestRef.current = request;
@@ -168,6 +180,10 @@ export default function App() {
       }
       
       console.error('[Form] ❌ Form submission failed:', err);
+      console.error('[Form] Error details:', {
+        message: err instanceof Error ? err.message : String(err),
+        stack: err instanceof Error ? err.stack : undefined,
+      });
       
       let errorMessage = 'Не удалось создать запрос';
       if (err instanceof Error) {
@@ -179,6 +195,8 @@ export default function App() {
           errorMessage = 'Вы уже использовали бесплатный демо для этого направления. Разблокируйте полный план.';
         } else if (err.message.includes('401') || err.message.includes('Unauthorized')) {
           errorMessage = 'Ошибка авторизации. Пожалуйста, перезагрузите приложение.';
+        } else if (err.message.includes('Network') || err.message.includes('fetch')) {
+          errorMessage = 'Не удалось подключиться к серверу. Проверьте соединение.';
         }
       }
       

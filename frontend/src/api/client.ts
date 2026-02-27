@@ -37,31 +37,47 @@ class ApiClient {
 
     const url = `${API_BASE_URL}${endpoint}`;
     console.log(`[API] ${options.method || 'GET'} ${url}`);
-
-    const response = await fetch(url, {
-      ...options,
-      headers,
-    });
-
-    if (!response.ok) {
-      let errorDetail = `HTTP ${response.status}: ${response.statusText}`;
-      
-      try {
-        const errorData: ApiError = await response.json();
-        errorDetail = errorData.detail || errorDetail;
-      } catch {
-        // If JSON parsing fails, use status text
-        const text = await response.text().catch(() => '');
-        if (text) {
-          errorDetail = text;
-        }
-      }
-      
-      console.error(`[API] Error ${response.status}:`, errorDetail);
-      throw new Error(errorDetail);
+    
+    if (options.body) {
+      console.log(`[API] Request body:`, options.body);
     }
 
-    return response.json();
+    try {
+      const response = await fetch(url, {
+        ...options,
+        headers,
+      });
+      
+      console.log(`[API] Response status: ${response.status} ${response.statusText}`);
+
+      if (!response.ok) {
+        let errorDetail = `HTTP ${response.status}: ${response.statusText}`;
+        
+        try {
+          const errorData: ApiError = await response.json();
+          errorDetail = errorData.detail || errorDetail;
+        } catch {
+          // If JSON parsing fails, use status text
+          const text = await response.text().catch(() => '');
+          if (text) {
+            errorDetail = text;
+          }
+        }
+        
+        console.error(`[API] Error ${response.status}:`, errorDetail);
+        throw new Error(errorDetail);
+      }
+
+      const data = await response.json();
+      console.log(`[API] Response data:`, data);
+      return data;
+    } catch (error) {
+      console.error(`[API] Fetch error:`, error);
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('Network error: Failed to fetch');
+    }
   }
 
   async get<T>(endpoint: string): Promise<T> {

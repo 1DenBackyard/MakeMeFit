@@ -11,6 +11,7 @@
 - Полный план с PDF после оплаты
 - История запросов
 - Реферальная система для тренеров
+- **Полностью русифицированный интерфейс**
 
 ---
 
@@ -46,16 +47,19 @@
 - **База данных**: PostgreSQL 15 (async SQLAlchemy)
 - **ORM**: SQLAlchemy 2.0+ (async)
 - **Миграции**: Alembic
-- **Аутентификация**: JWT токены, Telegram initData validation
+- **Аутентификация**: **ОТКЛЮЧЕНА** - используется mock user автоматически
 - **Rate Limiting**: aiolimiter (на уровне пользователя)
 - **PDF Generation**: reportlab + markdown
+- **LLM**: OpenAI-compatible API (настраивается через LLM_BASE_URL)
 
 ### Frontend (React + TypeScript)
 - **Фреймворк**: React 18.3.0
 - **Язык**: TypeScript 5.7.0
 - **Сборщик**: Vite 6.0.0
 - **Telegram SDK**: @twa-dev/sdk 7.0.0
-- **Стили**: Inline styles + дизайн-система (theme.ts)
+- **Стили**: **TailwindCSS** + UI компоненты (Screen, Card, Button, Input, Select, TextArea, Chip, Badge, Loader, Toast, Divider)
+- **State Management**: useReducer (state machine)
+- **Язык интерфейса**: **Русский** (полностью русифицирован)
 
 ### Database (PostgreSQL)
 - **Версия**: PostgreSQL 15
@@ -71,7 +75,7 @@ MakeMeFit/
 ├── backend/                    # FastAPI backend
 │   ├── app/
 │   │   ├── routers/           # API endpoints
-│   │   │   ├── auth.py        # Telegram authentication
+│   │   │   ├── auth.py        # Telegram authentication + /auth/dev/mock
 │   │   │   ├── requests.py    # Создание запросов, demo, full answer
 │   │   │   ├── payments.py    # Платежи (Telegram Payments)
 │   │   │   ├── trainers.py   # Реферальная система тренеров
@@ -85,7 +89,7 @@ MakeMeFit/
 │   │   ├── pdf_generator.py   # Генерация PDF из markdown
 │   │   ├── config.py          # Настройки (Pydantic Settings)
 │   │   ├── database.py        # Database connection, session
-│   │   ├── dependencies.py    # FastAPI dependencies (get_current_user)
+│   │   ├── dependencies.py    # FastAPI dependencies (get_current_user - опциональный, использует mock user)
 │   │   └── main.py            # FastAPI app, middleware, routers
 │   ├── prompts/               # LLM prompt templates
 │   │   ├── anti_fraud.txt
@@ -102,25 +106,45 @@ MakeMeFit/
 ├── frontend/                   # React + TypeScript Mini App
 │   ├── src/
 │   │   ├── ui/
-│   │   │   └── App.tsx         # Главный компонент (state management, routing)
+│   │   │   └── App.tsx         # Главный компонент (state machine, routing)
 │   │   ├── components/         # React компоненты
 │   │   │   ├── TrackSelection.tsx    # Выбор трека (Supplements/Workouts)
-│   │   │   ├── SupplementsForm.tsx    # Форма для добавок
-│   │   │   ├── WorkoutsForm.tsx       # Форма для тренировок
+│   │   │   ├── SupplementsForm.tsx    # Форма для добавок (русифицирована)
+│   │   │   ├── WorkoutsForm.tsx       # Форма для тренировок (русифицирована)
 │   │   │   ├── DemoAnswer.tsx         # Отображение demo ответа + paywall
-│   │   │   └── FullAnswer.tsx         # Полный ответ + PDF + trainer referral
+│   │   │   ├── FullAnswer.tsx         # Полный ответ + PDF + trainer referral
+│   │   │   ├── HistoryScreen.tsx      # История запросов
+│   │   │   ├── TrainerReferral.tsx    # Реферальная система
+│   │   │   └── ui/                    # UI примитивы (TailwindCSS)
+│   │   │       ├── Screen.tsx
+│   │   │       ├── Card.tsx
+│   │   │       ├── Button.tsx
+│   │   │       ├── Input.tsx
+│   │   │       ├── Select.tsx
+│   │   │       ├── TextArea.tsx
+│   │   │       ├── Chip.tsx
+│   │   │       ├── Badge.tsx
+│   │   │       ├── Loader.tsx
+│   │   │       ├── Toast.tsx
+│   │   │       └── Divider.tsx
 │   │   ├── api/                # API client
-│   │   │   ├── client.ts       # HTTP client, token management
-│   │   │   ├── auth.ts         # Telegram authentication
-│   │   │   └── requests.ts     # Requests API (create, demo, full, history)
+│   │   │   ├── client.ts       # HTTP client (без токена - backend использует mock user)
+│   │   │   ├── auth.ts         # Telegram authentication (не используется)
+│   │   │   ├── requests.ts     # Requests API (create, demo, full, history)
+│   │   │   └── trainers.ts     # Trainers API
 │   │   ├── hooks/
 │   │   │   └── useTelegram.ts  # Хук для Telegram WebApp SDK
-│   │   ├── styles/
-│   │   │   └── theme.ts        # Дизайн-система (colors, typography, spacing)
+│   │   ├── state/
+│   │   │   └── appState.ts     # State machine (AppState, AppAction, appReducer)
+│   │   ├── utils/
+│   │   │   ├── formData.ts     # Нормализация данных формы
+│   │   │   └── markdown.ts     # Рендеринг markdown
 │   │   └── main.tsx            # Entry point
 │   ├── Dockerfile              # Frontend container (multi-stage: build + nginx)
 │   ├── package.json            # NPM зависимости
 │   ├── vite.config.ts          # Vite конфигурация
+│   ├── tailwind.config.js      # TailwindCSS конфигурация
+│   ├── postcss.config.js       # PostCSS конфигурация
 │   └── tsconfig.json           # TypeScript конфигурация
 │
 ├── infra/
@@ -138,6 +162,8 @@ MakeMeFit/
 │   ├── TELEGRAM_SETUP.md           # Настройка Telegram бота
 │   ├── ENV_SETUP.md                # Переменные окружения
 │   ├── TROUBLESHOOTING.md          # Решение проблем
+│   ├── AUTH_TROUBLESHOOTING.md     # Решение проблем с аутентификацией
+│   ├── INITDATA_FIX.md             # Исправление проблемы с initData
 │   └── PROJECT_MEMORY.md           # Этот файл
 │
 └── README.md                   # Основной README
@@ -148,27 +174,38 @@ MakeMeFit/
 ## 🔌 API Endpoints
 
 ### Authentication (`/auth`)
-- `POST /auth/telegram` - Аутентификация через Telegram initData
+- `POST /auth/telegram` - Аутентификация через Telegram initData (не используется)
   - Возвращает: `{ token: string, user: UserResponse }`
   - Валидирует Telegram initData, создает/обновляет пользователя, возвращает JWT
+
+- `POST /auth/dev/mock` - **DEV ONLY**: Создать/получить mock user и вернуть токен
+  - Не требует аутентификации
+  - Возвращает: `{ token: string, user: UserResponse }`
+  - Использует фиксированный telegram_id = 123456789
+
+**ВАЖНО**: Аутентификация отключена. Backend автоматически использует mock user, если токен не предоставлен.
 
 ### Requests (`/requests`)
 - `POST /requests/` - Создать новый запрос
   - Требует: `{ track: 'supplements' | 'workouts', form_data: Record<string, unknown> }`
   - Проходит через anti-fraud (2-stage), создает запрос, генерирует demo ответ
   - Возвращает: `RequestResponse`
+  - **Не требует токена** - использует mock user автоматически
   
 - `GET /requests/{id}/demo` - Получить demo ответ
   - Возвращает: `{ request_id, demo_answer, requires_payment, message }`
   - Проверяет лимит: 1 demo per track per user
+  - **Не требует токена**
   
 - `POST /requests/{id}/full` - Генерировать полный ответ
   - Требует оплаты (проверяется через Payment)
   - Генерирует полный ответ + PDF
   - Возвращает: `{ request_id, full_answer, pdf_url, pdf_size_bytes }`
+  - **Не требует токена**
   
 - `GET /requests/` - История запросов пользователя
   - Возвращает: `RequestResponse[]`
+  - **Не требует токена**
 
 ### Payments (`/payments`)
 - `POST /payments/` - Создать платеж
@@ -176,6 +213,7 @@ MakeMeFit/
 
 ### Trainers (`/trainers`)
 - `POST /trainers/match` - Найти тренера (реферальная система)
+- `POST /trainers/leads` - Создать lead
 
 ### Admin (`/admin`)
 - `GET /admin/leads` - Все лиды (требует admin_secret)
@@ -193,14 +231,14 @@ MakeMeFit/
 ## 🎯 Бизнес-логика
 
 ### User Flow
-1. **Telegram Auth** → Пользователь открывает Mini App, отправляется initData
+1. **App Load** → Приложение загружается, сразу переходит к выбору трека (auth отключена)
 2. **Track Selection** → Выбор между Supplements и Workouts
-3. **Form** → Заполнение формы (цели, параметры, ограничения)
+3. **Form** → Заполнение формы (цели, параметры, ограничения) - **полностью русифицировано**
 4. **Anti-fraud** → 2-stage проверка:
    - Stage 1: Rule-based (быстрая проверка)
    - Stage 2: Structured validation (LLM проверка)
 5. **Demo Answer** → Генерация демо-ответа (маленькая модель)
-6. **Paywall** → Сообщение о необходимости оплаты
+6. **Paywall** → Сообщение о необходимости оплаты (если лимит достигнут)
 7. **Payment** → Telegram Payments (пропущено для теста)
 8. **Full Answer** → Генерация полного ответа (большая модель) + PDF
 9. **History** → Просмотр истории запросов
@@ -266,8 +304,8 @@ python-multipart>=0.0.9
 - Поддержка streaming (SSE)
 
 #### Security
-- **Telegram initData validation**: Проверка подписи через HMAC-SHA-256
-- **JWT tokens**: Для аутентификации API запросов
+- **Аутентификация ОТКЛЮЧЕНА**: Все endpoints используют mock user автоматически
+- **get_current_user**: Опциональный dependency - если токена нет, возвращает mock user (telegram_id = 123456789)
 - **Rate limiting**: На уровне пользователя (aiolimiter)
 - **CORS**: Настроен для Telegram доменов
 
@@ -286,36 +324,58 @@ python-multipart>=0.0.9
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react-swc": "^3.7.0",
     "typescript": "^5.7.0",
-    "vite": "^6.0.0"
+    "vite": "^6.0.0",
+    "tailwindcss": "^3.4.0",
+    "postcss": "^8.4.0",
+    "autoprefixer": "^10.4.0"
   }
 }
 ```
 
 #### State Management
-- Использует React hooks (useState, useEffect)
-- State в App.tsx:
-  - `state`: AppState (loading, auth, track_selection, form, demo, full_answer, error)
-  - `selectedTrack`: TrackType | null
-  - `currentRequest`: RequestResponse | null
-  - `demoResponse`: DemoResponse | null
-  - `fullAnswer`: { full_answer: string, pdf_url?: string } | null
+- **State Machine**: Использует `useReducer` с `appReducer`
+- **AppState**: loading, auth, track_selection, form, demo, paywall, full_answer, history, trainer_referral, error
+- **AppAction**: AUTH_START, AUTH_SUCCESS, AUTH_ERROR, SELECT_TRACK, SUBMIT_FORM_START, SUBMIT_FORM_SUCCESS, SUBMIT_FORM_ERROR, UNLOCK_START, UNLOCK_SUCCESS, UNLOCK_ERROR, SHOW_PAYWALL, SHOW_HISTORY, SHOW_TRAINER_REFERRAL, GO_BACK, RESET
 
 #### API Client
 - Централизованный клиент в `src/api/client.ts`
-- Управление токенами (localStorage)
-- Автоматическое добавление Authorization header
-- Обработка ошибок
+- **НЕ отправляет токен** - backend использует mock user автоматически
+- Автоматическая обработка ошибок
+- Логирование всех запросов в консоль
 
 #### Telegram Integration
 - Хук `useTelegram()` для работы с Telegram WebApp SDK
 - Автоматическая инициализация при загрузке
 - Расширение приложения, настройка темы
 - Использование WebApp.MainButton для прогресса
+- **Аутентификация отключена** - приложение сразу переходит к track_selection
 
-#### Дизайн-система
-- Централизованная тема в `src/styles/theme.ts`
-- Цвета, типографика, spacing, border-radius, transitions, shadows
-- Inline styles для всех компонентов
+#### UI System
+- **TailwindCSS**: Основная система стилей
+- **UI Primitives**: Переиспользуемые компоненты
+  - Screen: Контейнер экрана с header/footer
+  - Card: Карточка с hover эффектами
+  - Button: Кнопка с вариантами (primary, secondary, outline, ghost)
+  - Input: Текстовое поле с валидацией
+  - Select: Выпадающий список
+  - TextArea: Многострочное поле
+  - Chip: Чип для выбора (используется в формах)
+  - Badge: Бейдж для статусов
+  - Loader: Индикатор загрузки
+  - Toast: Уведомления
+  - Divider: Разделитель
+
+#### Интерфейс
+- **Полностью русифицирован**: Все тексты, сообщения, кнопки, заголовки на русском языке
+- Формы (SupplementsForm, WorkoutsForm) полностью на русском
+- Сообщения об ошибках на русском
+- Все компоненты русифицированы
+
+#### Form Data Normalization
+- `normalizeFormData()`: Преобразует данные формы в формат backend
+- `normalizeSupplementsForm()`: Нормализация для добавок
+- `normalizeWorkoutsForm()`: Нормализация для тренировок
+- Обрабатывает "Нет" в массивах (фильтрует из данных)
 
 ---
 
@@ -366,8 +426,8 @@ cd /opt/makemefit && ./scripts/update_vm.sh
 ### Backend Environment Variables (.env)
 
 #### Обязательные
-- `TELEGRAM_BOT_TOKEN` - Токен от @BotFather
-- `TELEGRAM_BOT_USERNAME` - Username бота без @
+- `TELEGRAM_BOT_TOKEN` - Токен от @BotFather (не используется, но должен быть)
+- `TELEGRAM_BOT_USERNAME` - Username бота без @ (не используется)
 - `LLM_API_KEY` - API ключ для LLM провайдера
 - `LLM_BASE_URL` - URL endpoint (например, `https://foundation-models.api.cloud.ru/v1`)
 - `SECRET_KEY` - Случайная строка минимум 32 символа (для JWT)
@@ -379,6 +439,8 @@ cd /opt/makemefit && ./scripts/update_vm.sh
 - `RATE_LIMIT_PER_MINUTE` - Лимит запросов в минуту (по умолчанию 60)
 - `PDF_STORAGE_PATH` - Путь для хранения PDF (по умолчанию `/app/pdfs`)
 - `DEBUG` - Режим отладки (по умолчанию False)
+- `LLM_MODEL` - Модель для demo (по умолчанию `gpt-4o-mini`)
+- `LLM_MODEL_FULL` - Модель для full answer (по умолчанию `gpt-4o`)
 
 ### Frontend Environment Variables
 
@@ -454,37 +516,40 @@ cd /opt/makemefit && ./scripts/update_vm.sh
 ```
 User → Frontend → Backend
   ↓
-1. Проверка demo лимита (DemoUsage)
-2. Stage 1 anti-fraud (rule-based)
-3. Stage 2 anti-fraud (LLM validation)
-4. Создание Request в БД
-5. Генерация demo ответа (маленькая модель)
-6. Сохранение demo_answer в Request
-7. Создание записи DemoUsage
-8. Возврат RequestResponse
+1. Backend автоматически использует mock user (если токена нет)
+2. Проверка demo лимита (DemoUsage)
+3. Stage 1 anti-fraud (rule-based)
+4. Stage 2 anti-fraud (LLM validation)
+5. Создание Request в БД
+6. Генерация demo ответа (маленькая модель)
+7. Сохранение demo_answer в Request
+8. Создание записи DemoUsage
+9. Возврат RequestResponse
 ```
 
 ### 2. Получение demo (GET /requests/{id}/demo)
 ```
 User → Frontend → Backend
   ↓
-1. Проверка существования Request
-2. Проверка demo лимита (если еще не использован)
-3. Возврат DemoResponse с demo_answer
+1. Backend автоматически использует mock user
+2. Проверка существования Request
+3. Проверка demo лимита (если еще не использован)
+4. Возврат DemoResponse с demo_answer
 ```
 
 ### 3. Генерация полного ответа (POST /requests/{id}/full)
 ```
 User → Frontend → Backend
   ↓
-1. Проверка существования Request
-2. Проверка оплаты (Payment.status == COMPLETED)
-3. Генерация полного ответа (большая модель)
-4. Генерация PDF из markdown
-5. Сохранение PDF в файловую систему
-6. Создание записи FullAnswer
-7. Обновление Request.full_answer
-8. Возврат FullAnswerResponse с pdf_url
+1. Backend автоматически использует mock user
+2. Проверка существования Request
+3. Проверка оплаты (Payment.status == COMPLETED)
+4. Генерация полного ответа (большая модель)
+5. Генерация PDF из markdown
+6. Сохранение PDF в файловую систему
+7. Создание записи FullAnswer
+8. Обновление Request.full_answer
+9. Возврат FullAnswerResponse с pdf_url
 ```
 
 ---
@@ -539,6 +604,12 @@ uvicorn app.main:app --reload
 
 ## 📝 Важные замечания
 
+### Аутентификация
+- **ОТКЛЮЧЕНА**: Все endpoints работают без токена
+- Backend автоматически использует mock user (telegram_id = 123456789), если токен не предоставлен
+- Frontend не отправляет токен в запросах
+- Приложение сразу переходит к выбору трека после загрузки
+
 ### LLM Provider
 - **Название провайдера не играет роли** - система работает с любым OpenAI-совместимым API
 - Если указан `LLM_BASE_URL`, система автоматически использует его
@@ -547,7 +618,7 @@ uvicorn app.main:app --reload
 ### Security
 - `.env` файлы **НЕ должны быть в git**
 - Скрипт `update_vm.sh` автоматически сохраняет и восстанавливает `.env`
-- Telegram initData валидируется на каждом запросе auth
+- Telegram initData валидация доступна, но не используется (auth отключена)
 
 ### Stateless Architecture
 - Все состояние хранится в БД
@@ -556,9 +627,15 @@ uvicorn app.main:app --reload
 
 ### Frontend
 - Использует `default export` для App компонента
-- Все компоненты используют inline styles + theme
+- Все компоненты используют TailwindCSS
 - API клиент централизован в `src/api/client.ts`
-- Token хранится в localStorage
+- **Не использует токены** - backend работает без них
+- **Полностью русифицирован** - все тексты на русском
+
+### Form Data
+- Формы нормализуют данные перед отправкой
+- Обрабатывают "Нет" в массивах (фильтруют из данных)
+- Валидация на клиенте и сервере
 
 ---
 
@@ -570,14 +647,51 @@ uvicorn app.main:app --reload
 - [Настройка Telegram](TELEGRAM_SETUP.md)
 - [Настройка окружения](ENV_SETUP.md)
 - [Решение проблем](TROUBLESHOOTING.md)
+- [Проблемы с аутентификацией](AUTH_TROUBLESHOOTING.md)
+- [Исправление initData](INITDATA_FIX.md)
 
 ### Внешние ресурсы
 - Telegram Mini Apps: https://core.telegram.org/bots/webapps
 - Telegram WebApp SDK: https://github.com/twa-dev/sdk
 - FastAPI: https://fastapi.tiangolo.com
 - React: https://react.dev
+- TailwindCSS: https://tailwindcss.com
+
+---
+
+## 🐛 Известные проблемы и решения
+
+### Проблема: Запрос не отправляется
+**Симптомы**: Форма заполнена, но запрос не уходит на backend
+
+**Возможные причины**:
+1. API_BASE_URL не настроен правильно
+2. CORS ошибки
+3. Backend не запущен
+4. Ошибка в payload
+
+**Решение**:
+1. Проверить логи в консоли браузера: `[API]` и `[Form]`
+2. Проверить, что backend запущен: `curl http://localhost:8000/health`
+3. Проверить VITE_API_URL в frontend
+4. Проверить CORS настройки в backend
+
+### Проблема: LLM не генерирует ответ
+**Симптомы**: Запрос создается, но demo ответ не генерируется
+
+**Возможные причины**:
+1. LLM_API_KEY не настроен
+2. LLM_BASE_URL неверный
+3. Ошибка в промпте
+4. Превышен лимит токенов
+
+**Решение**:
+1. Проверить `backend/.env`: `LLM_API_KEY` и `LLM_BASE_URL`
+2. Проверить логи backend: `docker-compose logs -f backend`
+3. Проверить промпты в `backend/prompts/`
 
 ---
 
 **Последнее обновление**: 2026-02-25
-**Версия**: 0.1.0
+**Версия**: 0.2.0
+**Статус**: Аутентификация отключена, интерфейс русифицирован, готов к тестированию LLM
