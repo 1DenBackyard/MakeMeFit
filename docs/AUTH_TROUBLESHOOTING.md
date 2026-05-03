@@ -20,7 +20,7 @@
    /newapp
    Выберите бота
    Укажите название приложения
-   Укажите URL: https://app.amesin.ru
+   Укажите URL: https://app.example.com
    Сохраните
    ```
 
@@ -78,10 +78,10 @@ grep TELEGRAM_BOT_TOKEN backend/.env
 **Решение:**
 ```bash
 # Проверьте, что backend доступен
-curl https://api.amesin.ru/health
+curl https://api.example.com/health
 
 # Проверьте CORS настройки в backend/app/main.py
-# Должно быть разрешено для домена app.amesin.ru
+# Должно быть разрешено для домена app.example.com
 ```
 
 #### 5. Backend не запущен или недоступен
@@ -184,7 +184,7 @@ print(result)
    docker-compose restart
    ```
 
-2. Проверьте, что домен Mini App в @BotFather совпадает с app.amesin.ru
+2. Проверьте, что домен Mini App в @BotFather совпадает с app.example.com
 
 3. Убедитесь, что используется HTTPS (Telegram требует HTTPS для Mini Apps)
 

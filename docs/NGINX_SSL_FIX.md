@@ -2,7 +2,7 @@
 
 Если вы видите ошибку:
 ```
-nginx: [emerg] cannot load certificate "/etc/letsencrypt/live/api.amesin.ru/fullchain.pem": BIO_new_file() failed
+nginx: [emerg] cannot load certificate "/etc/letsencrypt/live/api.example.com/fullchain.pem": BIO_new_file() failed
 ```
 
 Это означает, что в конфигурации Nginx указаны пути к сертификатам, которых еще нет.
@@ -27,7 +27,7 @@ sudo nano /etc/nginx/sites-available/makemefit
 # Backend API (HTTP)
 server {
     listen 80;
-    server_name api.amesin.ru;
+    server_name api.example.com;
 
     location / {
         proxy_pass http://localhost:8000;
@@ -47,7 +47,7 @@ server {
 # Frontend (HTTP)
 server {
     listen 80;
-    server_name app.amesin.ru;
+    server_name app.example.com;
 
     location / {
         proxy_pass http://localhost:5173;
@@ -80,11 +80,11 @@ sudo systemctl start nginx
 sudo systemctl stop nginx
 
 sudo certbot certonly --standalone \
-    -d api.amesin.ru \
-    -d app.amesin.ru \
+    -d api.example.com \
+    -d app.example.com \
     --non-interactive \
     --agree-tos \
-    --email admin@amesin.ru
+    --email admin@example.com
 
 # Проверьте, где созданы сертификаты
 sudo certbot certificates
@@ -104,17 +104,17 @@ sudo nano /etc/nginx/sites-available/makemefit
 # Backend API
 server {
     listen 80;
-    server_name api.amesin.ru;
+    server_name api.example.com;
     return 301 https://$server_name$request_uri;
 }
 
 server {
     listen 443 ssl http2;
-    server_name api.amesin.ru;
+    server_name api.example.com;
 
     # Используйте путь, который показал certbot certificates
-    ssl_certificate /etc/letsencrypt/live/api.amesin.ru/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/api.amesin.ru/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/api.example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/api.example.com/privkey.pem;
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_ciphers HIGH:!aNULL:!MD5;
 
@@ -136,17 +136,17 @@ server {
 # Frontend
 server {
     listen 80;
-    server_name app.amesin.ru;
+    server_name app.example.com;
     return 301 https://$server_name$request_uri;
 }
 
 server {
     listen 443 ssl http2;
-    server_name app.amesin.ru;
+    server_name app.example.com;
 
     # Используйте тот же путь, что и для API (если один сертификат)
-    ssl_certificate /etc/letsencrypt/live/api.amesin.ru/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/api.amesin.ru/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/api.example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/api.example.com/privkey.pem;
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_ciphers HIGH:!aNULL:!MD5;
 
@@ -181,10 +181,10 @@ sudo systemctl status nginx
 
 ```bash
 # Backend
-curl https://api.amesin.ru/health
+curl https://api.example.com/health
 
 # Frontend
-curl -I https://app.amesin.ru
+curl -I https://app.example.com
 ```
 
 ## Альтернативный способ: один сертификат для обоих доменов
@@ -196,7 +196,7 @@ curl -I https://app.amesin.ru
 sudo certbot certificates
 ```
 
-Используйте путь, который показан в выводе (обычно это `/etc/letsencrypt/live/api.amesin.ru/` или `/etc/letsencrypt/live/app.amesin.ru/`).
+Используйте путь, который показан в выводе (обычно это `/etc/letsencrypt/live/api.example.com/` или `/etc/letsencrypt/live/app.example.com/`).
 
 ## Troubleshooting
 
@@ -204,8 +204,8 @@ sudo certbot certificates
 
 ```bash
 # Проверьте DNS
-nslookup api.amesin.ru
-nslookup app.amesin.ru
+nslookup api.example.com
+nslookup app.example.com
 
 # Убедитесь, что порты открыты
 sudo ufw status

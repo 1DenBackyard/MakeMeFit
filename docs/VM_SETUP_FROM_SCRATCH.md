@@ -144,8 +144,8 @@ sudo passwd deploy
 
 ```
 A запись:
-api.amesin.ru → ваш-ip-адрес
-app.amesin.ru → ваш-ip-адрес
+api.example.com → ваш-ip-адрес
+app.example.com → ваш-ip-адрес
 ```
 
 Подождите 5-15 минут для распространения DNS.
@@ -163,7 +163,7 @@ sudo chown $USER:$USER /opt/makemefit
 
 # Клонируйте репозиторий
 cd /opt
-git clone https://github.com/amesin/MakeMeFit.git makemefit
+git clone https://github.com/1DenBackyard/MakeMeFit.git makemefit
 cd makemefit
 ```
 
@@ -265,7 +265,7 @@ sudo nano /etc/nginx/sites-available/makemefit
 # Backend API (HTTP временно)
 server {
     listen 80;
-    server_name api.amesin.ru;
+    server_name api.example.com;
 
     location / {
         proxy_pass http://localhost:8000;
@@ -285,7 +285,7 @@ server {
 # Frontend (HTTP временно)
 server {
     listen 80;
-    server_name app.amesin.ru;
+    server_name app.example.com;
 
     location / {
         proxy_pass http://localhost:5173;
@@ -328,11 +328,11 @@ sudo systemctl stop nginx
 
 # Создайте сертификаты в standalone режиме
 sudo certbot certonly --standalone \
-    -d api.amesin.ru \
-    -d app.amesin.ru \
+    -d api.example.com \
+    -d app.example.com \
     --non-interactive \
     --agree-tos \
-    --email admin@amesin.ru
+    --email admin@example.com
 
 # Запустите Nginx обратно
 sudo systemctl start nginx
@@ -352,16 +352,16 @@ sudo nano /etc/nginx/sites-available/makemefit
 # Backend API
 server {
     listen 80;
-    server_name api.amesin.ru;
+    server_name api.example.com;
     return 301 https://$server_name$request_uri;
 }
 
 server {
     listen 443 ssl http2;
-    server_name api.amesin.ru;
+    server_name api.example.com;
 
-    ssl_certificate /etc/letsencrypt/live/api.amesin.ru/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/api.amesin.ru/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/api.example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/api.example.com/privkey.pem;
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_ciphers HIGH:!aNULL:!MD5;
 
@@ -383,16 +383,16 @@ server {
 # Frontend
 server {
     listen 80;
-    server_name app.amesin.ru;
+    server_name app.example.com;
     return 301 https://$server_name$request_uri;
 }
 
 server {
     listen 443 ssl http2;
-    server_name app.amesin.ru;
+    server_name app.example.com;
 
-    ssl_certificate /etc/letsencrypt/live/app.amesin.ru/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/app.amesin.ru/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/app.example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/app.example.com/privkey.pem;
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_ciphers HIGH:!aNULL:!MD5;
 
@@ -411,8 +411,8 @@ server {
 ```
 
 **Примечание**: Если certbot создал один сертификат для обоих доменов, используйте:
-- `ssl_certificate /etc/letsencrypt/live/api.amesin.ru/fullchain.pem;` (или путь, который показал certbot)
-- `ssl_certificate_key /etc/letsencrypt/live/api.amesin.ru/privkey.pem;`
+- `ssl_certificate /etc/letsencrypt/live/api.example.com/fullchain.pem;` (или путь, который показал certbot)
+- `ssl_certificate_key /etc/letsencrypt/live/api.example.com/privkey.pem;`
 
 Проверьте, какой путь использовал certbot:
 ```bash
@@ -437,11 +437,11 @@ sudo systemctl status nginx
 
 ```bash
 # Backend через HTTPS
-curl https://api.amesin.ru/health
+curl https://api.example.com/health
 # Должно вернуть: {"status":"ok","version":"0.1.0"}
 
 # Frontend через HTTPS
-curl -I https://app.amesin.ru
+curl -I https://app.example.com
 # Должен вернуть HTTP 200 (не приветственный экран Nginx!)
 
 # Проверка SSL сертификатов
@@ -515,14 +515,14 @@ sudo systemctl reload nginx
 
 ```bash
 # Проверьте DNS
-nslookup api.amesin.ru
-nslookup app.amesin.ru
+nslookup api.example.com
+nslookup app.example.com
 
 # Убедитесь, что порты 80 и 443 открыты
 sudo ufw status
 
 # Попробуйте создать сертификаты вручную
-sudo certbot certonly --standalone -d api.amesin.ru -d app.amesin.ru
+sudo certbot certonly --standalone -d api.example.com -d app.example.com
 ```
 
 ### Backend не отвечает
@@ -560,8 +560,8 @@ sudo systemctl restart nginx
 ## Готово! 🎉
 
 Ваше приложение должно быть доступно:
-- **API**: https://api.amesin.ru
-- **Frontend**: https://app.amesin.ru
+- **API**: https://api.example.com
+- **Frontend**: https://app.example.com
 
 ## Следующие шаги
 

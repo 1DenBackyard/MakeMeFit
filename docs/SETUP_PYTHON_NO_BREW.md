@@ -174,7 +174,7 @@ python3 --version
 
 ```bash
 # Перейдите в backend
-cd /Users/amesin/MakeMeFit/backend
+cd /Users/your-user/MakeMeFit/backend
 
 # Создайте venv
 python3 -m venv venv

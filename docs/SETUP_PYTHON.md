@@ -201,7 +201,7 @@ pip install -r requirements.txt
 brew install python@3.11
 
 # 2. Перейдите в проект
-cd /Users/amesin/MakeMeFit/backend
+cd /Users/your-user/MakeMeFit/backend
 
 # 3. Создайте venv
 python3 -m venv venv

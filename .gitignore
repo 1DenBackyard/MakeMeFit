@@ -60,3 +60,6 @@ backend/alembic/versions/*.pyc
 
 # Docker
 .dockerignore
+
+# IDE-specific files
+.cursor/

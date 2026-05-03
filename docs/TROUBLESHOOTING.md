@@ -242,5 +242,5 @@ docker-compose up -d
 
 3. **Test endpoints:**
    ```bash
-   curl https://api.amesin.ru/health
+   curl https://api.example.com/health
    ```

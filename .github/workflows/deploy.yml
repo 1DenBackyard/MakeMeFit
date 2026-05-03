@@ -24,14 +24,14 @@ jobs:
         env:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
           DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
-          DOMAIN_API: ${{ secrets.DOMAIN_API || 'api.amesin.ru' }}
-          DOMAIN_APP: ${{ secrets.DOMAIN_APP || 'app.amesin.ru' }}
+          DOMAIN_API: ${{ secrets.DOMAIN_API || 'api.example.com' }}
+          DOMAIN_APP: ${{ secrets.DOMAIN_APP || 'app.example.com' }}
         run: |
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << EOF
             set -e
             
-            DOMAIN_API="${DOMAIN_API:-api.amesin.ru}"
-            DOMAIN_APP="${DOMAIN_APP:-app.amesin.ru}"
+            DOMAIN_API="${DOMAIN_API:-api.example.com}"
+            DOMAIN_APP="${DOMAIN_APP:-app.example.com}"
             
             echo "🚀 Starting deployment..."
             echo "🌐 API Domain: \${DOMAIN_API}"
@@ -162,8 +162,8 @@ NGINX_EOF
             
             # Получаем SSL сертификаты (если еще нет)
             echo "🔒 Getting SSL certificates..."
-            sudo certbot --nginx -d \${DOMAIN_API} --non-interactive --agree-tos --email admin@amesin.ru --redirect || echo "⚠️  Certificate for API already exists"
-            sudo certbot --nginx -d \${DOMAIN_APP} --non-interactive --agree-tos --email admin@amesin.ru --redirect || echo "⚠️  Certificate for App already exists"
+            sudo certbot --nginx -d \${DOMAIN_API} --non-interactive --agree-tos --email admin@example.com --redirect || echo "⚠️  Certificate for API already exists"
+            sudo certbot --nginx -d \${DOMAIN_APP} --non-interactive --agree-tos --email admin@example.com --redirect || echo "⚠️  Certificate for App already exists"
             
             # Перезагружаем Nginx
             echo "🔄 Reloading Nginx..."

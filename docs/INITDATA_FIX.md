@@ -54,7 +54,7 @@
 ```
 [Telegram] ❌ initData is missing!
 [Telegram] WebApp object: {...}
-[Telegram] URL: https://app.amesin.ru/...
+[Telegram] URL: https://app.example.com/...
 ```
 
 ### 3. Проверьте настройки бота
@@ -62,7 +62,7 @@
 1. Откройте @BotFather в Telegram
 2. Выберите вашего бота
 3. Выберите "Bot Settings" → "Menu Button" или "Web App"
-4. Убедитесь, что URL правильный: `https://app.amesin.ru`
+4. Убедитесь, что URL правильный: `https://app.example.com`
 5. Сохраните изменения
 
 ### 4. Проверьте домен

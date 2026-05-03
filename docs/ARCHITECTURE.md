@@ -18,9 +18,9 @@
 ## 🌐 Домен и деплой
 
 ### Домены
-- **Основной домен**: amesin.ru
-- **API**: api.amesin.ru (backend на порту 8000)
-- **Frontend**: app.amesin.ru (frontend на порту 5173)
+- **Основной домен**: example.com
+- **API**: api.example.com (backend на порту 8000)
+- **Frontend**: app.example.com (frontend на порту 5173)
 
 ### Инфраструктура
 - **VM**: /opt/makemefit
@@ -164,7 +164,7 @@ MakeMeFit/
 │   ├── TROUBLESHOOTING.md          # Решение проблем
 │   ├── AUTH_TROUBLESHOOTING.md     # Решение проблем с аутентификацией
 │   ├── INITDATA_FIX.md             # Исправление проблемы с initData
-│   └── PROJECT_MEMORY.md           # Этот файл
+│   └── ARCHITECTURE.md           # Этот файл
 │
 └── README.md                   # Основной README
 ```
@@ -446,7 +446,7 @@ cd /opt/makemefit && ./scripts/update_vm.sh
 
 #### Опциональные
 - `VITE_API_URL` - URL backend API (по умолчанию `http://localhost:8000`)
-  - В production обычно: `https://api.amesin.ru`
+  - В production обычно: `https://api.example.com`
 
 ---
 
